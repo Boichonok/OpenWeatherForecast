@@ -1,0 +1,6 @@
+package com.example.myapplication.Model.Entity.WeatherApiPojos.POJO
+
+import com.google.gson.annotations.SerializedName
+
+data class Clouds (@SerializedName("all") var all: Double = 0.0)
+
