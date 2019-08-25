@@ -23,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
 
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
@@ -61,7 +62,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     private var publishSubjectCurrentForecast: PublishSubject<CityCurrentWeatherTable> = PublishSubject.create()
 
-    private lateinit var observerCurrentForecast: Observer<CityCurrentWeatherTable>
+    private lateinit var observerCurrentForecast: DisposableObserver<CityCurrentWeatherTable>
 
     private var isOfflineMode: Boolean = true
 
@@ -203,7 +204,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
 
 
-    override fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>) {
+    override fun subscribeToUpdateCurrentForecastByLocation(observer: DisposableObserver<CityCurrentWeatherTable>) {
         observerCurrentForecast = observer
 
         if (!isOfflineMode) {

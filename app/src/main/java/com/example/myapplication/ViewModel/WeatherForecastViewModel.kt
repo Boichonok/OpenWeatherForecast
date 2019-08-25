@@ -13,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.exceptions.OnErrorNotImplementedException
+import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -41,12 +42,9 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
 
 
-    private var currentLocationCurrentForecastObserver: Observer<CityCurrentWeatherTable> = object : Observer<CityCurrentWeatherTable> {
+    private var currentLocationCurrentForecastObserver: DisposableObserver<CityCurrentWeatherTable> = object : DisposableObserver<CityCurrentWeatherTable>() {
         override fun onComplete() {
             Log.d("ViewModel", "onComplete")
-        }
-
-        override fun onSubscribe(d: Disposable?) {
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
@@ -69,5 +67,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     override fun onCleared() {
         super.onCleared()
         weatherForecastManager.unsubscribeAll()
+        currentLocationCurrentForecastObserver.dispose()
     }
 }
