@@ -17,6 +17,7 @@ import com.example.myapplication.Model.Repositories.OpenWeatherAPI.IOpenWeatherA
 import com.example.myapplication.Model.Repositories.WeatherRoom.IWeatherRoom
 import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
 import io.reactivex.Flowable
+import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 
 import io.reactivex.disposables.CompositeDisposable
@@ -25,6 +26,7 @@ import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.AsyncSubject
 import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
 
 import javax.inject.Inject
 
@@ -66,44 +68,24 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     //Channel for transmitting current forecast
     private var publishSubjectCurrentForecast = PublishSubject.create<CityCurrentWeatherTable>()
 
-    private lateinit var observerCurrentForecast: DisposableObserver<CityCurrentWeatherTable>
+    private lateinit var observerCurrentForecast: Observer<CityCurrentWeatherTable>
 
     //Chanel for transmitting all my added cities
     private var asyncSubjectAllMyCities = AsyncSubject.create<List<CityCurrentWeatherTable>>()
 
-   // private  lateinit var observeAllMyCities: DisposableObserver<List<CityCurrentWeatherTable>>
-
-    private var isOfflineMode: Boolean = true
-
-    private var isFirstStart: Boolean = true
+    private var isOfflineMode: Boolean = false
 
     constructor() {
         WeatherForecastApplication.getUseCaseComponent().inject(this)
-        WeatherForecastApplication.subscribeToUpdateFirstStart(firstStartObserver)
         connectivityManager.registerNetworkCallback(networkBuilder.build(), networkCallback)
     }
 
-    private val firstStartObserver = object : DisposableObserver<Boolean>() {
-        override fun onComplete() {
-
-        }
-
-        override fun onNext(t: Boolean?) {
-            isFirstStart = t!!
-        }
-
-        override fun onError(e: Throwable?) {
-
-        }
-
-    }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onLost(network: Network?) {
             super.onLost(network)
 
             isOfflineMode = true
-            Log.d("ViewModel", "OfflineMode: " + isOfflineMode)
             updateCurrentCityForecastIsNetworkOffline()
 
         }
@@ -112,7 +94,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
             super.onAvailable(network)
 
             isOfflineMode = false
-            Log.d("ViewModel", "OfflineMode: " + isOfflineMode)
             if (!isNetworkProviderEnable && !isGPSProviderEnable) {
                 updateCurrentCityForecastIsNetworkOnline()
             }
@@ -137,15 +118,15 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         @SuppressLint("MissingPermission")
         override fun onProviderDisabled(provider: String?) {
             checkProvider()
-            if (!isOfflineMode) {
-                var lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-
-                updateCurrentCitysForecastIsLocationProvidersOnline(
-                    Coord(
-                        lastKnownLocation.longitude,
-                        lastKnownLocation.latitude
+            if (!isOfflineMode && !WeatherForecastApplication.isFirstStart) {
+                var lastKnownLocation = locationManager.getLastKnownLocation(provider)
+                if (lastKnownLocation != null)
+                    updateCurrentCitysForecastIsLocationProvidersOnline(
+                        Coord(
+                            lastKnownLocation.longitude,
+                            lastKnownLocation.latitude
+                        )
                     )
-                )
             }
         }
 
@@ -168,6 +149,13 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     it.weathers!!
                 )
             }
+            .delay(30,TimeUnit.SECONDS)
+            /*.doOnError {
+                publishSubjectCurrentForecast.onError(Throwable("updateCurrentCitysForecastIsLocationProvidersOnline(): " + it.message))
+            }
+            .retryWhen {
+                it.take(1).delay(10,TimeUnit.SECONDS)
+            }*/
             .distinctUntilChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -195,16 +183,24 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                             it.weathers!!
                         )
                     }
+                    /*.doOnError {
+                        publishSubjectCurrentForecast.onError(Throwable(it.localizedMessage))
+                    }*/
+                    .retryWhen {
+                        it.take(1).delay(10,TimeUnit.SECONDS)
+                    }
                     .distinctUntilChanged()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
                         addCityToCurrentWeatherDB(it)
+                        Log.d("UseCase","publishSubjectCurrentForecast.Online.OnNext().city_name: " + it.city_name)
                         publishSubjectCurrentForecast.onNext(it)
-                        if (isFirstStart)
+
+                        if (WeatherForecastApplication.isFirstStart)
                             WeatherForecastApplication.setFinishedFirstStart(context)
                     }, {
-                        publishSubjectCurrentForecast.onError(Throwable("updateCurrentCityForecastIsNetworkOnline().ApiRequest: " + it))
+                        publishSubjectCurrentForecast.onError(Throwable(it.message))
                     })
             )
         }
@@ -217,7 +213,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-
+                    Log.d("UseCase","publishSubjectCurrentForecast.Offline.OnNext().city_name: " + it.city_name)
                     publishSubjectCurrentForecast.onNext(it)
                 }, {
                     publishSubjectCurrentForecast.onError(Throwable("updateCurrentCityForecastIsNetworkOffline(): " + it.message))
@@ -246,14 +242,19 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     private fun checkProvider() {
         isGPSProviderEnable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         isNetworkProviderEnable = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        Log.d("UseCase", "E_GPS: " + true)
     }
 
 
-    override fun subscribeToUpdateCurrentForecastByLocation(observer: DisposableObserver<CityCurrentWeatherTable>) {
+    override fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>) {
         observerCurrentForecast = observer
 
-        if (isFirstStart)
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() != NetworkInfo.State.CONNECTED
+                ||connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() != NetworkInfo.State.CONNECTED)
+            isOfflineMode = true
+
+        Log.d("UseCase","IsFirstStart: " + WeatherForecastApplication.isFirstStart)
+        Log.d("UseCase", "Offline Mode: " + isOfflineMode)
+        if (WeatherForecastApplication.isFirstStart)
             if (!isOfflineMode) {
                 updateCurrentCityForecastIsNetworkOnline()
             } else {
@@ -270,9 +271,8 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     @SuppressLint("MissingPermission")
     override fun startSearchLocation() {
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, locationListener)
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10f, locationListener)
-
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 20f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 20f, locationListener)
     }
 
     override fun stopSearchLocation() {
@@ -281,30 +281,33 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     override fun getAllMyCitiesForecasts(observer: DisposableObserver<List<CityCurrentWeatherTable>>) {
         asyncSubjectAllMyCities.subscribe(observer)
-        if(!isFirstStart) {
-            if(weatherRoom.getCityWeatherInfoDao().getCountRow() > 0) {
-                disposable.add(
-                    weatherRoom.getCityWeatherInfoDao().getAllRows()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({
-                            asyncSubjectAllMyCities.onNext(it)
-                            asyncSubjectAllMyCities.onComplete()
-                        }, {
-                            asyncSubjectAllMyCities.onError(it)
-                        })
-                )
-            }
-            else
-            {
-                asyncSubjectAllMyCities.onError(Throwable("Data base is Empty"))
-            }
-        }
-        else
+        if (!WeatherForecastApplication.isFirstStart) {
+            disposable.add(weatherRoom.getCityWeatherInfoDao().getCountRow()
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe {
+                    if (it > 0) {
+                        disposable.add(
+                            weatherRoom.getCityWeatherInfoDao().getAllRows()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe({
+                                    asyncSubjectAllMyCities.onNext(it)
+                                    asyncSubjectAllMyCities.onComplete()
+                                }, {
+                                    asyncSubjectAllMyCities.onError(it)
+                                })
+                        )
+                    } else {
+                        asyncSubjectAllMyCities.onError(Throwable("Data base is Empty"))
+                    }
+                })
+
+        } else
             asyncSubjectAllMyCities.onError(Throwable("It is first start and DB is Empty"))
     }
 
-    override fun subscribeToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>) {
+    override fun setSubscriberToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>) {
         observerAddingMyCity = observer
     }
 

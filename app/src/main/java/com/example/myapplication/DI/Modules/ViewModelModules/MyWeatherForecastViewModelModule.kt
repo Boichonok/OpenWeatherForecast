@@ -10,9 +10,6 @@ import dagger.Provides
 @Module//(includes = [CompositeDisposableModule::class])
 class MyWeatherForecastViewModelModule {
 
-
-
-
     @ViewModel
     @Provides
     fun getMyWeatherForecastUseCase(): IWeatherForecastManager

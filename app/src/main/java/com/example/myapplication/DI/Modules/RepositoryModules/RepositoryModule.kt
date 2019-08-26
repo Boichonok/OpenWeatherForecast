@@ -1,32 +1,43 @@
 package com.example.myapplication.DI.Modules.RepositoryModules
 
-import com.example.myapplication.DI.ScopeAnnotations.RepositoryScopes.Repository
-import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
-import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.IWeatherService
+import androidx.room.Room
+import android.content.Context
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
+import com.example.myapplication.DI.Modules.CompositeDisposableModule
+import com.example.myapplication.DI.Modules.ContextModule
+import com.example.myapplication.DI.ScopeAnnotations.RepositoryScopes.UseCase
+import com.example.myapplication.Model.Repositories.OpenWeatherAPI.IOpenWeatherAPIManager
+import com.example.myapplication.Model.Repositories.OpenWeatherAPI.OpenWeatherAPIManager
+import com.example.myapplication.Model.Repositories.WeatherRoom.IWeatherRoom
 import dagger.Module
 import dagger.Provides
-import retrofit2.Retrofit
 
-@Module
+@Module(includes = [ContextModule::class,CompositeDisposableModule::class])
 class RepositoryModule {
 
-    @Repository
+    @UseCase
     @Provides
-    fun options(): LinkedHashMap<String,String>
+    fun getWeatherRoom(context: Context): IWeatherRoom
     {
-        return LinkedHashMap< String,String>()
+        return Room.databaseBuilder(context,
+            IWeatherRoom::class.java,
+            "weather_forecast_dataBase").build()
     }
 
+    @UseCase
     @Provides
-    fun openWeatherAPIService(retrofit: Retrofit): IWeatherService
+    fun getOpenWeatherAPIManager(): IOpenWeatherAPIManager
     {
-        return retrofit.create(IWeatherService::class.java)
+        return OpenWeatherAPIManager()
     }
 
-    @Repository
+    @UseCase
     @Provides
-    fun openWeatherAPIClient(): Retrofit
+    fun locationManager(context: Context): LocationManager
     {
-        return WeatherClient().getWeatherAPIClient()
+        var locationManager =  ContextCompat.getSystemService(context, LocationManager::class.java) as LocationManager
+        return locationManager
     }
+
 }

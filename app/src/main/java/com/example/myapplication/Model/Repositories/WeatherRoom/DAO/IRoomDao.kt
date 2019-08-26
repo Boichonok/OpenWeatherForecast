@@ -3,6 +3,7 @@ package com.example.myapplication.Model.Repositories.WeatherRoom.DAO
 
 import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Observable
 
 interface IRoomDao<T> {
 
@@ -18,7 +19,7 @@ interface IRoomDao<T> {
 
     fun getRowByCityName(cityName: String): Maybe<T>
 
-    fun getCountRow(): Int
+    fun getCountRow(): Observable<Int>
 
 
 }

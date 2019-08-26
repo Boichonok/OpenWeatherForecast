@@ -6,6 +6,7 @@ import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.C
 
 import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Observable
 
 
 @Dao
@@ -29,7 +30,7 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     override fun getRowByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
 
     @Query("SELECT COUNT(city_name) FROM city_current_weather_table")
-    override fun getCountRow(): Int
+    override fun getCountRow(): Observable<Int>
 
 
 }

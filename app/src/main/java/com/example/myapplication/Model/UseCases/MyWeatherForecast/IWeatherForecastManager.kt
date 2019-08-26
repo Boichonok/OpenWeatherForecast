@@ -1,12 +1,13 @@
 package com.example.myapplication.Model.UseCases.MyWeatherForecast
 
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
+import io.reactivex.Observer
 import io.reactivex.observers.DisposableObserver
 
 interface IWeatherForecastManager {
-    fun subscribeToUpdateCurrentForecastByLocation(observer: DisposableObserver<CityCurrentWeatherTable>)
+    fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>)
 
-    fun subscribeToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>)
+    fun setSubscriberToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>)
 
     fun addMyCityWithCurrentDayForecast(cityName: String)
 

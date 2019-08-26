@@ -6,15 +6,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.Application.WeatherForecastApplication
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
-import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Coord
 import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
 import io.reactivex.*
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
-import io.reactivex.exceptions.OnErrorNotImplementedException
 import io.reactivex.observers.DisposableObserver
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
@@ -32,25 +27,25 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     constructor() {
         WeatherForecastApplication.getViewModelComponent().inject(this)
         weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(currentLocationCurrentForecastObserver)
-        weatherForecastManager.subscribeToUpdateMyCity(addingMyCityObserver)
+        weatherForecastManager.setSubscriberToUpdateMyCity(addingMyCityObserver)
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
     }
 
-    private var currentLocationCurrentForecastObserver = object : DisposableObserver<CityCurrentWeatherTable>() {
+    private var currentLocationCurrentForecastObserver = object : Observer<CityCurrentWeatherTable> {
+        override fun onSubscribe(d: Disposable?) {
+        }
+
         override fun onComplete() {
-            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onComplete")
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
-            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onNext() current forecast: " + t!!.city_name + " " + t.temperature)
             currentCityForecast.value = t
-            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onNext() current forecast MLiveData: " + currentCityForecast.value!!.city_name + " " + currentCityForecast.value!!.temperature)
 
         }
 
         override fun onError(e: Throwable?) {
-            Log.d("ViewModel","currentLocationCurrentForecastObserver: onError(): " + e!!.message)
-            errors.value = e!!.message
+            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
+//            errors.value = e!!.message
         }
 
     }
@@ -78,7 +73,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onNext(t: List<CityCurrentWeatherTable>?) {
-
+            Log.d("ViewModel","AllCities: " + t!!)
         }
 
         override fun onError(e: Throwable?) {
@@ -111,6 +106,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     override fun onCleared() {
         super.onCleared()
         weatherForecastManager.unsubscribeAll()
-        currentLocationCurrentForecastObserver.dispose()
+        addingMyCityObserver.dispose()
+        getAllMyCitiesObserver.dispose()
     }
 }

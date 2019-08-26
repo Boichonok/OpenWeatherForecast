@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             country.text = it.country
             temp.text = it.temperature.toString()
             windSpeed.text = it.wind_speed.toString()
-            weather.text = it.weather.toString()
+           // weather.text = it.weather.toString()
         })
 
     }

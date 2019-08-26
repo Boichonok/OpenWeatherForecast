@@ -10,7 +10,7 @@ class WeatherClient: IWeatherClient {
     companion object {
         const val CURRENT_WEATHER = "/data/2.5/weather"
         const val FORECAST = "/data/2.5/forecast"
-        const val API_KEY = "a6f3b449994c5b92e43fcab8f98e15f8"
+        const val API_KEY = "011709f71a27aa6286aa58816ed7a0a6"
     }
     private val BASE_URL = "https://api.openweathermap.org"
 
