@@ -4,6 +4,10 @@
     <string name="country_field">Country: </string>
     <string name="temp_field">Temp.: </string>
     <string name="wind_speed">Wind Speed: </string>
-    <string name="weatheer_icon_description">weather icon</string>
+    <string name="weather_icon_description">weather icon</string>
+    <string name="add_cities_button">Add my city</string>
+    <string name="dialog_title">Please enter your city\'s name</string>
+    <string name="dialog_ok_button">Ok</string>
+    <string name="dialog_info">info</string>
 
 </resources>

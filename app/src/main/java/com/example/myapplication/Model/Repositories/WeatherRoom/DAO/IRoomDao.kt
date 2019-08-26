@@ -15,7 +15,7 @@ interface IRoomDao<T> {
 
     fun deleteByID(id: Int)
 
-    fun getAllRows(): Flowable<List<T>>
+    fun getAllRows(defaultCityName: String): Flowable<List<T>>
 
     fun getRowByCityName(cityName: String): Maybe<T>
 

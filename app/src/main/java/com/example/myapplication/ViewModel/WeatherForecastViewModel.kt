@@ -17,9 +17,11 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     private var currentCityForecast = MutableLiveData<CityCurrentWeatherTable>()
 
+    private var myCitiesList = MutableLiveData<List<CityCurrentWeatherTable>>()
 
 
     private var errors = MutableLiveData<String>()
+    private var error = ""
 
     @Inject
     lateinit var weatherForecastManager: IWeatherForecastManager
@@ -45,7 +47,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
         override fun onError(e: Throwable?) {
             Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
-//            errors.value = e!!.message
+            error = e!!.message!!
         }
 
     }
@@ -65,7 +67,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onError(e: Throwable?) {
-            errors.value = e!!.message
+            error = e!!.message!!
         }
 
     }
@@ -82,10 +84,11 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
         override fun onNext(t: List<CityCurrentWeatherTable>?) {
             Log.d("ViewModel","AllCities: " + t!!)
+            myCitiesList.value = t!!
         }
 
         override fun onError(e: Throwable?) {
-
+            error = e!!.message!!
         }
 
     }
@@ -99,8 +102,13 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         return currentCityForecast
     }
 
-    override fun getMyCitiesListAdapter() {
+    override fun getMyCitiesList(): LiveData<List<CityCurrentWeatherTable>> {
+        return myCitiesList
+    }
 
+    override fun getErrors(): LiveData<String> {
+        errors.value = error
+        return errors
     }
 
     override fun startSearchLocation() {

@@ -11,6 +11,8 @@ import com.example.myapplication.DI.Modules.ActivityModules.MainActivityModule
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
 import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
 import com.example.myapplication.R
+import com.example.myapplication.View.Adapters.MyCitiesListAdapter
+import com.example.myapplication.View.CustomDialog.EnterMyCityDialog
 import com.example.myapplication.ViewModel.IWeatherForecastViewModel
 import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,6 +22,7 @@ import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -28,13 +31,17 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var weatherForecastViewModel: IWeatherForecastViewModel
 
+    @Inject
+    lateinit var myCitiesListAdapter: MyCitiesListAdapter
+
+    @Inject
+    lateinit var addMyCityDialog: EnterMyCityDialog.Builder
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val mainActivityComponent = DaggerIMainActivityComponent.builder()
-            //.compositeDisposableModule(WeatherForecastApplication.compositeDisposableModule)
             .mainActivityModule(MainActivityModule(this))
             .build()
         mainActivityComponent.inject(this)
@@ -48,6 +55,20 @@ class MainActivity : AppCompatActivity() {
             Picasso.get().load(WeatherClient.ICON_URL_PART1 + it.weather!![0].icon + WeatherClient.ICON_URL_PART2).error(R.drawable.no_connect).into(weather_icon)
         })
 
+        weatherForecastViewModel.getMyCitiesList().observe(this, Observer {
+            myCitiesListAdapter.setListItems(it)
+            my_cities_recycler_view.adapter = myCitiesListAdapter
+        })
+
+        add_my_cities.setOnClickListener {
+            addMyCityDialog
+                .setTitle(R.string.dialog_title.toString())
+                .setHintEditText(R.string.city_name_field.toString())
+                .setInfoDialog(R.string.dialog_info.toString())
+                .setOkButtonClickListener {
+                    weatherForecastViewModel.addMyCity(it)
+                }.build().showDialog()
+        }
     }
 
     override fun onStart() {

@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="CustomDialogTheme">
+        <item name="android:windowEnterAnimation">@anim/slide_left_anim</item>
+        <item name="android:windowExitAnimation">@anim/slide_right_anim</item>
+    </style>
+
 </resources>

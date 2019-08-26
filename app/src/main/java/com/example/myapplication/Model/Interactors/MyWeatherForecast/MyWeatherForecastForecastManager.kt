@@ -288,7 +288,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 .subscribe {
                     if (it > 0) {
                         disposable.add(
-                            weatherRoom.getCityWeatherInfoDao().getAllRows()
+                            weatherRoom.getCityWeatherInfoDao().getAllRows(defaultCityName)
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe({

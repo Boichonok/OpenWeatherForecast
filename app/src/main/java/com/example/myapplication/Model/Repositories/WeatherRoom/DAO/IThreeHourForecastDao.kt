@@ -21,8 +21,8 @@ interface IThreeHourForecastDao: IRoomDao<ThreeHourForecastTable> {
     @Query("DELETE FROM three_hour_forecast_table WHERE id == :id")
     override fun deleteByID(id: Int)
 
-    @Query("SELECT * FROM three_hour_forecast_table")
-    override fun getAllRows(): Flowable<List<ThreeHourForecastTable>>
+    @Query("SELECT * FROM three_hour_forecast_table WHERE city_name != :defaultCityName")
+    override fun getAllRows(defaultCityName: String): Flowable<List<ThreeHourForecastTable>>
 
     @Query("SELECT * FROM three_hour_forecast_table WHERE city_name == :cityName")
     override fun getRowByCityName(cityName: String): Maybe<ThreeHourForecastTable>
