@@ -1,4 +1,4 @@
-package com.example.myapplication.DI.Modules.RepositoryModules
+package com.example.myapplication.DI.Modules.UseCaseModules
 
 import androidx.room.Room
 import android.content.Context

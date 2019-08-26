@@ -5,4 +5,5 @@
     <string name="temp_field">Temp.: </string>
     <string name="wind_speed">Wind Speed: </string>
     <string name="weatheer_icon_description">weather icon</string>
+
 </resources>

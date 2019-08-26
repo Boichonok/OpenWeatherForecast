@@ -1,6 +1,6 @@
-package com.example.myapplication.DI.Components.RepositoryComponents
+package com.example.myapplication.DI.Components.RepositorySComponents
 
-import com.example.myapplication.DI.Modules.RepositoryModules.OpenWeatherApiModule
+import com.example.myapplication.DI.Modules.RepositorySModules.OpenWeatherApiModule
 import com.example.myapplication.DI.ScopeAnnotations.RepositoryScopes.Repository
 import com.example.myapplication.Model.Repositories.OpenWeatherAPI.OpenWeatherAPIManager
 import dagger.Component

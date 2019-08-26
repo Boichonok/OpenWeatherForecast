@@ -9,8 +9,10 @@ import com.example.myapplication.Application.WeatherForecastApplication
 import com.example.myapplication.DI.Components.ActivityComponents.DaggerIMainActivityComponent
 import com.example.myapplication.DI.Modules.ActivityModules.MainActivityModule
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
+import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
 import com.example.myapplication.R
 import com.example.myapplication.ViewModel.IWeatherForecastViewModel
+import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
@@ -39,11 +41,11 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "OnCreate()")
 
         weatherForecastViewModel.getWeatherForecastByCurrentLocation().observe(this, Observer {
-            currentCityName.text = it.city_name
-            country.text = it.country
-            temp.text = it.temperature.toString()
-            windSpeed.text = it.wind_speed.toString()
-           // weather.text = it.weather.toString()
+            currentCityName.text = "" + R.string.city_name_field +  it.city_name
+            country.text = "" + R.string.country_field + it.country
+            temp.text = "" + R.string.temp_field + it.temperature.toString()
+            windSpeed.text = "" + R.string.wind_speed + it.wind_speed.toString()
+            Picasso.get().load(WeatherClient.ICON_URL_PART1 + it.weather!![0].icon + WeatherClient.ICON_URL_PART2).error(R.drawable.no_connect).into(weather_icon)
         })
 
     }

@@ -11,6 +11,8 @@ class WeatherClient: IWeatherClient {
         const val CURRENT_WEATHER = "/data/2.5/weather"
         const val FORECAST = "/data/2.5/forecast"
         const val API_KEY = "011709f71a27aa6286aa58816ed7a0a6"
+        const val ICON_URL_PART1 = "http://openweathermap.org/img/wn/"
+        const val ICON_URL_PART2 = "@2x.png"
     }
     private val BASE_URL = "https://api.openweathermap.org"
 

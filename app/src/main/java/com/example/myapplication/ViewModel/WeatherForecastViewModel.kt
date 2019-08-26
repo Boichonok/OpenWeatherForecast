@@ -26,12 +26,12 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     constructor() {
         WeatherForecastApplication.getViewModelComponent().inject(this)
-        weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(currentLocationCurrentForecastObserver)
+        weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(observerCurrentForecastIsLocationProvidersOnline)
         weatherForecastManager.setSubscriberToUpdateMyCity(addingMyCityObserver)
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
     }
 
-    private var currentLocationCurrentForecastObserver = object : Observer<CityCurrentWeatherTable> {
+    private var observerCurrentForecastIsLocationProvidersOnline = object : Observer<CityCurrentWeatherTable> {
         override fun onSubscribe(d: Disposable?) {
         }
 
@@ -50,8 +50,12 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     }
 
-    private var addingMyCityObserver  = object : DisposableObserver<CityCurrentWeatherTable>()
+    private var addingMyCityObserver  = object : Observer<CityCurrentWeatherTable>
     {
+        override fun onSubscribe(d: Disposable?) {
+
+        }
+
         override fun onComplete() {
             weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
         }
@@ -66,8 +70,12 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     }
 
-    private var getAllMyCitiesObserver = object : DisposableObserver<List<CityCurrentWeatherTable>>()
+    private var getAllMyCitiesObserver = object : Observer<List<CityCurrentWeatherTable>>
     {
+        override fun onSubscribe(d: Disposable?) {
+
+        }
+
         override fun onComplete() {
 
         }
@@ -106,7 +114,5 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     override fun onCleared() {
         super.onCleared()
         weatherForecastManager.unsubscribeAll()
-        addingMyCityObserver.dispose()
-        getAllMyCitiesObserver.dispose()
     }
 }

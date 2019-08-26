@@ -5,13 +5,14 @@ import io.reactivex.Observer
 import io.reactivex.observers.DisposableObserver
 
 interface IWeatherForecastManager {
+
     fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>)
 
-    fun setSubscriberToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>)
+    fun setSubscriberToUpdateMyCity(observer: Observer<CityCurrentWeatherTable>)
 
     fun addMyCityWithCurrentDayForecast(cityName: String)
 
-    fun getAllMyCitiesForecasts(observer: DisposableObserver<List<CityCurrentWeatherTable>>)
+    fun getAllMyCitiesForecasts(observer: Observer<List<CityCurrentWeatherTable>>)
 
     fun startSearchLocation()
 

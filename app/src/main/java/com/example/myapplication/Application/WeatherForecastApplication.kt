@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.preference.PreferenceManager
 import android.util.Log
-import com.example.myapplication.DI.Components.RepositoryComponents.DaggerIOpenWeatherComponent
-import com.example.myapplication.DI.Components.RepositoryComponents.IOpenWeatherComponent
+import com.example.myapplication.DI.Components.RepositorySComponents.DaggerIOpenWeatherComponent
+import com.example.myapplication.DI.Components.RepositorySComponents.IOpenWeatherComponent
 import com.example.myapplication.DI.Components.UseCasesComponents.DaggerIUseCaseComponents
 import com.example.myapplication.DI.Components.UseCasesComponents.IUseCaseComponents
 import com.example.myapplication.DI.Components.ViewModelComponents.DaggerIViewModelComponent
@@ -14,8 +14,8 @@ import com.example.myapplication.DI.Modules.CompositeDisposableModule
 import com.example.myapplication.DI.Modules.ConnectivityManagerModule
 import com.example.myapplication.DI.Modules.ContextModule
 
-import com.example.myapplication.DI.Modules.RepositoryModules.OpenWeatherApiModule
-import com.example.myapplication.DI.Modules.RepositoryModules.RepositoryModule
+import com.example.myapplication.DI.Modules.RepositorySModules.OpenWeatherApiModule
+import com.example.myapplication.DI.Modules.UseCaseModules.RepositoryModule
 import com.example.myapplication.DI.Modules.ViewModelModules.MyWeatherForecastViewModelModule
 import io.reactivex.subjects.ReplaySubject
 

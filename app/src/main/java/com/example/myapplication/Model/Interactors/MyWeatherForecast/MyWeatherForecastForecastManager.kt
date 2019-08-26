@@ -63,7 +63,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     //Channel for transmitting event that adding to DB is compleat
     private var publishSubjectAddMyCity = PublishSubject.create<CityCurrentWeatherTable>()
 
-    private lateinit var observerAddingMyCity: DisposableObserver<CityCurrentWeatherTable>
+    private lateinit var observerAddingMyCity: Observer<CityCurrentWeatherTable>
 
     //Channel for transmitting current forecast
     private var publishSubjectCurrentForecast = PublishSubject.create<CityCurrentWeatherTable>()
@@ -149,7 +149,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     it.weathers!!
                 )
             }
-            .delay(30,TimeUnit.SECONDS)
+            .delay(2,TimeUnit.SECONDS)
             /*.doOnError {
                 publishSubjectCurrentForecast.onError(Throwable("updateCurrentCitysForecastIsLocationProvidersOnline(): " + it.message))
             }
@@ -271,15 +271,15 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     @SuppressLint("MissingPermission")
     override fun startSearchLocation() {
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 20f, locationListener)
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 20f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0f, locationListener)
     }
 
     override fun stopSearchLocation() {
         locationManager.removeUpdates(locationListener)
     }
 
-    override fun getAllMyCitiesForecasts(observer: DisposableObserver<List<CityCurrentWeatherTable>>) {
+    override fun getAllMyCitiesForecasts(observer: Observer<List<CityCurrentWeatherTable>>) {
         asyncSubjectAllMyCities.subscribe(observer)
         if (!WeatherForecastApplication.isFirstStart) {
             disposable.add(weatherRoom.getCityWeatherInfoDao().getCountRow()
@@ -307,7 +307,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
             asyncSubjectAllMyCities.onError(Throwable("It is first start and DB is Empty"))
     }
 
-    override fun setSubscriberToUpdateMyCity(observer: DisposableObserver<CityCurrentWeatherTable>) {
+    override fun setSubscriberToUpdateMyCity(observer: Observer<CityCurrentWeatherTable>) {
         observerAddingMyCity = observer
     }
 
