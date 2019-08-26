@@ -7,6 +7,7 @@ import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.C
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 
+
 @Dao
 interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     @Insert
@@ -22,13 +23,10 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     override fun deleteByID(id: Int)
 
     @Query("SELECT * FROM city_current_weather_table")
-    override fun getAllTables():Flowable<List<CityCurrentWeatherTable>>
+    override fun getAllRows():Flowable<List<CityCurrentWeatherTable>>
 
     @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName")
-    override fun getTableByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
-
-    @Query("SELECT * FROM city_current_weather_table WHERE lat == :lat & lon == :lon")
-    override fun getTableByCityLocation(lat: Double,lon: Double): Flowable<CityCurrentWeatherTable>
+    override fun getRowByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
 
     @Query("SELECT COUNT(city_name) FROM city_current_weather_table")
     override fun getCountRow(): Int

@@ -29,7 +29,7 @@ class WeatherForecastApplication : Application() {
         private lateinit var viewModelComponent: IViewModelComponent
         private lateinit var useCaseComponent: IUseCaseComponents
 
-        private val APPLICATION_FIRST_STSRT = WeatherForecastApplication::class.simpleName
+        private val APPLICATION_FIRST_STSRT = "WeatherForecastApplication"
         private val publishSubjectFirstStart = PublishSubject.create<Boolean>()
         private lateinit var firstStartObserver: DisposableObserver<Boolean>
 
@@ -47,6 +47,8 @@ class WeatherForecastApplication : Application() {
             PreferenceManager.getDefaultSharedPreferences(context).edit().apply {
                 putBoolean(APPLICATION_FIRST_STSRT, true)
                 apply()
+                publishSubjectFirstStart.subscribe(firstStartObserver)
+                publishSubjectFirstStart.onNext(true)
             }
         }
     }

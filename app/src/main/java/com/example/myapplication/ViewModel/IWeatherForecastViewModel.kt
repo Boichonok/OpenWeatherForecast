@@ -11,6 +11,8 @@ import io.reactivex.disposables.CompositeDisposable
 
 interface IWeatherForecastViewModel {
     fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable>
+    fun getMyCitiesListAdapter()
+    fun addMyCity(cityName: String)
     fun startSearchLocation()
     fun stopSearchLocation()
 

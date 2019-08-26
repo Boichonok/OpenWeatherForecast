@@ -20,17 +20,11 @@ import javax.inject.Inject
 class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
 
+    private var currentCityForecast = MutableLiveData<CityCurrentWeatherTable>()
 
-    private var currentCityForecast: MutableLiveData<CityCurrentWeatherTable> = MutableLiveData<CityCurrentWeatherTable>()
 
-    override fun startSearchLocation() {
-        weatherForecastManager.startSearchLocation()
-    }
 
-    override fun stopSearchLocation() {
-        weatherForecastManager.stopSearchLocation()
-    }
-
+    private var errors = MutableLiveData<String>()
 
     @Inject
     lateinit var weatherForecastManager: IWeatherForecastManager
@@ -38,30 +32,80 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     constructor() {
         WeatherForecastApplication.getViewModelComponent().inject(this)
         weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(currentLocationCurrentForecastObserver)
+        weatherForecastManager.subscribeToUpdateMyCity(addingMyCityObserver)
+        weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
     }
 
-
-
-    private var currentLocationCurrentForecastObserver: DisposableObserver<CityCurrentWeatherTable> = object : DisposableObserver<CityCurrentWeatherTable>() {
+    private var currentLocationCurrentForecastObserver = object : DisposableObserver<CityCurrentWeatherTable>() {
         override fun onComplete() {
-            Log.d("ViewModel", "onComplete")
+            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onComplete")
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
-            Log.d("ViewModel", "onNext() current forecast: " + t!!.city_name + " " + t.temperature)
+            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onNext() current forecast: " + t!!.city_name + " " + t.temperature)
             currentCityForecast.value = t
-            Log.d("ViewModel", "onNext() current forecast MLiveData: " + currentCityForecast.value!!.city_name + " " + currentCityForecast.value!!.temperature)
+            Log.d("ViewModel", "currentLocationCurrentForecastObserver: onNext() current forecast MLiveData: " + currentCityForecast.value!!.city_name + " " + currentCityForecast.value!!.temperature)
 
         }
 
         override fun onError(e: Throwable?) {
-            Log.d("ViewModel","onError(): " + e!!.message)
+            Log.d("ViewModel","currentLocationCurrentForecastObserver: onError(): " + e!!.message)
+            errors.value = e!!.message
         }
 
     }
 
+    private var addingMyCityObserver  = object : DisposableObserver<CityCurrentWeatherTable>()
+    {
+        override fun onComplete() {
+            weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
+        }
+
+        override fun onNext(t: CityCurrentWeatherTable?) {
+
+        }
+
+        override fun onError(e: Throwable?) {
+            errors.value = e!!.message
+        }
+
+    }
+
+    private var getAllMyCitiesObserver = object : DisposableObserver<List<CityCurrentWeatherTable>>()
+    {
+        override fun onComplete() {
+
+        }
+
+        override fun onNext(t: List<CityCurrentWeatherTable>?) {
+
+        }
+
+        override fun onError(e: Throwable?) {
+
+        }
+
+    }
+
+
+    override fun addMyCity(cityName: String) {
+        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName)
+    }
+
     override fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable> {
         return currentCityForecast
+    }
+
+    override fun getMyCitiesListAdapter() {
+
+    }
+
+    override fun startSearchLocation() {
+        weatherForecastManager.startSearchLocation()
+    }
+
+    override fun stopSearchLocation() {
+        weatherForecastManager.stopSearchLocation()
     }
 
     override fun onCleared() {

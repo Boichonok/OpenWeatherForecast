@@ -21,13 +21,10 @@ interface IThreeHourForecastDao: IRoomDao<ThreeHourForecastTable> {
     override fun deleteByID(id: Int)
 
     @Query("SELECT * FROM three_hour_forecast_table")
-    override fun getAllTables(): Flowable<List<ThreeHourForecastTable>>
+    override fun getAllRows(): Flowable<List<ThreeHourForecastTable>>
 
     @Query("SELECT * FROM three_hour_forecast_table WHERE city_name == :cityName")
-    override fun getTableByCityName(cityName: String): Maybe<ThreeHourForecastTable>
-
-    @Query("SELECT * FROM three_hour_forecast_table WHERE lat == :lat & lon == :lon")
-    override fun getTableByCityLocation(lat: Double,lon: Double): Flowable<ThreeHourForecastTable>
+    override fun getRowByCityName(cityName: String): Maybe<ThreeHourForecastTable>
 
     @Query("SELECT COUNT(city_name) FROM three_hour_forecast_table")
     override fun getCountRow(): Int
