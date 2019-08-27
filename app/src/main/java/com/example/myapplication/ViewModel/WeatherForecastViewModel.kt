@@ -28,13 +28,14 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     constructor() {
         WeatherForecastApplication.getViewModelComponent().inject(this)
-        weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(observerCurrentForecastIsLocationProvidersOnline)
+        weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(
+            observerCurrentForecastIsLocationProvidersOnline
+        )
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
         weatherForecastManager.subscribeToErrorHandler(observerErrors)
     }
 
-    private var observerErrors = object : Observer<String>
-    {
+    private var observerErrors = object : Observer<String> {
         override fun onComplete() {
         }
 
@@ -42,8 +43,8 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onNext(t: String?) {
-            errors.value = t!!
-            Log.d("ViewModel","Error: " + t)
+                errors.value = t!!
+            Log.d("ViewModel", "Error: " + t)
         }
 
         override fun onError(e: Throwable?) {
@@ -59,7 +60,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
-            Log.d("UseCase","currentLocationCurrentForecastObserver: onNext(): " + t!!.city_name)
+            Log.d("UseCase", "currentLocationCurrentForecastObserver: onNext(): " + t!!.city_name)
             currentCityForecast.value = t!!
 
         }
@@ -69,14 +70,13 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     }
 
-    private var addingMyCityObserver  = object : Observer<CityCurrentWeatherTable>
-    {
+    private var addingMyCityObserver = object : Observer<CityCurrentWeatherTable> {
         override fun onSubscribe(d: Disposable?) {
         }
 
         override fun onComplete() {
             weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
-            Log.d("UseCase","Added")
+            Log.d("UseCase", "Added")
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
@@ -88,8 +88,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     }
 
-    private var getAllMyCitiesObserver = object : Observer<List<CityCurrentWeatherTable>>
-    {
+    private var getAllMyCitiesObserver = object : Observer<List<CityCurrentWeatherTable>> {
         override fun onSubscribe(d: Disposable?) {
 
         }
@@ -101,7 +100,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         override fun onNext(t: List<CityCurrentWeatherTable>?) {
 
             myCitiesList.value = t!!
-            Log.d("UseCase","List in VIew Model: " + t!!.size)
+            Log.d("UseCase", "List in VIew Model: " + t!!.size)
         }
 
         override fun onError(e: Throwable?) {
@@ -111,7 +110,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
 
     override fun addMyCity(cityName: String) {
-        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName,addingMyCityObserver)
+        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName, addingMyCityObserver)
     }
 
     override fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable> {

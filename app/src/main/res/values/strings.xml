@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Weather Forecast</string>
     <string name="city_name_field">City: </string>
     <string name="country_field">Country: </string>
     <string name="temp_field">Temp.: </string>
@@ -9,5 +9,10 @@
     <string name="dialog_title">Please enter your city\'s name</string>
     <string name="dialog_ok_button">Ok</string>
     <string name="dialog_info">info</string>
+    <string name="map_view_tool_bar">"Weather Forecast\'s map"</string>
+    <string name="meter_per_second">M/S</string>
+    <string name="temp_cell">\u2103</string>
+
+    <string name="intent_city_key">CITY</string>
 
 </resources>

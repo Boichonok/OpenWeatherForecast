@@ -1,16 +1,15 @@
 package com.example.myapplication.View
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.DI.Components.ActivityComponents.DaggerIMainActivityComponent
 import com.example.myapplication.DI.Modules.ActivityModules.MainActivityModule
-import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
 import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
 import com.example.myapplication.R
 import com.example.myapplication.View.Adapters.MyCitiesListAdapter
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var addMyCityDialog: EnterMyCityDialog.Builder
 
-   // var citiesList: ArrayList<CityCurrentWeatherTable> = ArrayList()
+    // var citiesList: ArrayList<CityCurrentWeatherTable> = ArrayList()
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,8 +50,8 @@ class MainActivity : AppCompatActivity() {
         weatherForecastViewModel.getWeatherForecastByCurrentLocation().observe(this, Observer {
             currentCityName.text = "" + getString(R.string.city_name_field) + " " + it.city_name
             country.text = "" + getString(R.string.country_field) + " " + it.country
-            temp.text = "" + getString(R.string.temp_field) + " " + it.temperature.toString()
-            windSpeed.text = "" + getString(R.string.wind_speed) + " " + it.wind_speed.toString()
+            temp.text = "" + getString(R.string.temp_field) + " " + it.temperature.toString() + getString(R.string.temp_cell)
+            windSpeed.text = "" + getString(R.string.wind_speed) + " " + it.wind_speed.toString() + " " + getString(R.string.meter_per_second)
             Picasso.get().load(WeatherClient.ICON_URL_PART1 + "" + it.weather!![0].icon + WeatherClient.ICON_URL_PART2)
                 .error(R.drawable.no_connect).into(weather_icon)
         })
@@ -62,8 +61,6 @@ class MainActivity : AppCompatActivity() {
             my_cities_recycler_view.adapter = myCitiesListAdapter
 
         })
-
-        my_cities_recycler_view.layoutManager = LinearLayoutManager(this)
 
         add_my_cities.setOnClickListener {
             addMyCityDialog
@@ -75,9 +72,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         weatherForecastViewModel.getErrors().observe(this, Observer {
-            Toast.makeText(this,it,Toast.LENGTH_LONG).show()
+            if (it!!.length > 0)
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
         })
 
+        my_cities_recycler_view.layoutManager = LinearLayoutManager(this)
+        myCitiesListAdapter.setItemClickAction {
+            val intent = Intent(this, GoogleMapActivity::class.java)
+            intent.putExtra(getString(R.string.intent_city_key), it)
+            startActivity(intent)
+        }
     }
 
     override fun onStart() {

@@ -6,12 +6,13 @@ import androidx.annotation.NonNull
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Coord
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Weather
 import com.example.myapplication.Model.Repositories.WeatherRoom.ConverterCityCurrentWeather
-import com.google.gson.annotations.SerializedName
-import java.util.*
+import java.util.
+*import java.io.Serializable;
 
 
+@SuppressWarnings("serial")
 @Entity(tableName = "city_current_weather_table")
-class CityCurrentWeatherTable() {
+class CityCurrentWeatherTable() : Serializable {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
 

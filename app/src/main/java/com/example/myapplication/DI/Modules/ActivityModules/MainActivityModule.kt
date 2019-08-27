@@ -2,7 +2,6 @@ package com.example.myapplication.DI.Modules.ActivityModules
 
 
 import androidx.lifecycle.ViewModelProviders
-import com.example.myapplication.DI.Modules.CompositeDisposableModule
 import com.example.myapplication.DI.ScopeAnnotations.MainActivityScope
 import com.example.myapplication.View.Adapters.MyCitiesListAdapter
 import com.example.myapplication.View.CustomDialog.EnterMyCityDialog

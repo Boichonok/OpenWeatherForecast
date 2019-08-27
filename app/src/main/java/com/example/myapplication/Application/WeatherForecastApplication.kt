@@ -4,12 +4,15 @@ import android.app.Application
 import android.content.Context
 import android.preference.PreferenceManager
 import android.util.Log
+import com.example.myapplication.DI.Components.ActivityComponents.DaggerIGoogleMapActivityComponent
+import com.example.myapplication.DI.Components.ActivityComponents.IGoogleMapActivityComponent
 import com.example.myapplication.DI.Components.RepositorySComponents.DaggerIOpenWeatherComponent
 import com.example.myapplication.DI.Components.RepositorySComponents.IOpenWeatherComponent
 import com.example.myapplication.DI.Components.UseCasesComponents.DaggerIUseCaseComponents
 import com.example.myapplication.DI.Components.UseCasesComponents.IUseCaseComponents
 import com.example.myapplication.DI.Components.ViewModelComponents.DaggerIViewModelComponent
 import com.example.myapplication.DI.Components.ViewModelComponents.IViewModelComponent
+import com.example.myapplication.DI.Modules.ActivityModules.GoogleMapActivityModule
 import com.example.myapplication.DI.Modules.CompositeDisposableModule
 import com.example.myapplication.DI.Modules.ConnectivityManagerModule
 import com.example.myapplication.DI.Modules.ContextModule
@@ -27,6 +30,7 @@ class WeatherForecastApplication : Application() {
         private lateinit var openWeatherComponent: IOpenWeatherComponent
         private lateinit var viewModelComponent: IViewModelComponent
         private lateinit var useCaseComponent: IUseCaseComponents
+        private lateinit var googleMapActivityComponent: IGoogleMapActivityComponent
 
         private val APPLICATION_FIRST_STSRT = "WeatherForecastApplication"
         private val publishSubjectFirstStart = ReplaySubject.create<Boolean>()
@@ -42,6 +46,7 @@ class WeatherForecastApplication : Application() {
         fun getRepositoryComponent(): IOpenWeatherComponent = openWeatherComponent
         fun getViewModelComponent(): IViewModelComponent = viewModelComponent
         fun getUseCaseComponent(): IUseCaseComponents = useCaseComponent
+        fun getGoogleMapActivityComponent(): IGoogleMapActivityComponent = googleMapActivityComponent
 
         fun setFinishedFirstStart(context: Context) {
             PreferenceManager.getDefaultSharedPreferences(context).edit().apply {
@@ -62,16 +67,17 @@ class WeatherForecastApplication : Application() {
 
     private var openWeatherApiModule: OpenWeatherApiModule = OpenWeatherApiModule()
     private var connectivityManagerModule: ConnectivityManagerModule = ConnectivityManagerModule()
-    private var repositoryModule: RepositoryModule =
-        RepositoryModule()
+    private var repositoryModule: RepositoryModule = RepositoryModule()
     private var myWeatherForecastViewModelModule: MyWeatherForecastViewModelModule = MyWeatherForecastViewModelModule()
     private var contextModule = ContextModule(this)
+    private var googleMapActivityModule = GoogleMapActivityModule()
 
     override fun onCreate() {
         super.onCreate()
         openWeatherComponent = initRepository()
         viewModelComponent = initViewModel()
         useCaseComponent = initUseCase()
+        googleMapActivityComponent = initGoogleMapActivity()
 
         checkFirstStart(this)
     }
@@ -100,5 +106,12 @@ class WeatherForecastApplication : Application() {
             .build()
     }
 
+    private fun initGoogleMapActivity(): IGoogleMapActivityComponent
+    {
+        return DaggerIGoogleMapActivityComponent
+            .builder()
+            .googleMapActivityModule(googleMapActivityModule)
+            .build()
+    }
 
 }

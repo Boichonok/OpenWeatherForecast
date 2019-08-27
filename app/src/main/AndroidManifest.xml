@@ -18,12 +18,20 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
 
+        <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="AIzaSyD7OxHgM85ZD4hMrlSF0KBSAL2PSuULBD8"/>
+
         <activity android:name=".View.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+
+        <activity android:name=".View.GoogleMapActivity">
+
         </activity>
     </application>
 

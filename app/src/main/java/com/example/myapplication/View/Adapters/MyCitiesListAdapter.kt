@@ -16,9 +16,9 @@ import kotlin.collections.ArrayList
 class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesViewHolder>() {
 
 
-
     private var items: List<CityCurrentWeatherTable> = ArrayList()
 
+    private lateinit var itemClickAction: (CityCurrentWeatherTable) -> Unit
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyCitiesViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
@@ -28,11 +28,14 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
         return MyCitiesViewHolder(view = view)
     }
 
-    fun setListItems(items: List<CityCurrentWeatherTable>)
-    {
+    fun setListItems(items: List<CityCurrentWeatherTable>) {
         this.items = items
-        Log.d("UseCae","List size: " + this.items.size)
+        Log.d("UseCae", "List size: " + this.items.size)
         notifyDataSetChanged()
+    }
+
+    fun setItemClickAction(actoin: (CityCurrentWeatherTable) -> Unit) {
+        itemClickAction = actoin
     }
 
     override fun getItemCount(): Int {
@@ -41,16 +44,16 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
 
     override fun onBindViewHolder(holder: MyCitiesViewHolder, position: Int) {
         val item = items[position]
-        holder.city_name.text = ""  + item.city_name
+        holder.city_name.text = "" + item.city_name
         holder.country.text = "" + item.country
-        holder.temp.text = "" + item.temperature
+        holder.temp.text = "" + item.temperature + "\u2103"//Cell temp
         Picasso
             .get()
             .load(WeatherClient.ICON_URL_PART1 + item.weather!![0].icon + WeatherClient.ICON_URL_PART2)
             .error(R.drawable.no_connect)
             .into(holder.icon)
         holder.itemView.setOnClickListener {
-
+            itemClickAction(item)
         }
     }
 
