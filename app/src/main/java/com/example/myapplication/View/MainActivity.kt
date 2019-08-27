@@ -77,11 +77,12 @@ class MainActivity : AppCompatActivity() {
         })
 
         my_cities_recycler_view.layoutManager = LinearLayoutManager(this)
+
+
         myCitiesListAdapter.setItemClickAction {
-            val intent = Intent(this, GoogleMapActivity::class.java)
-            intent.putExtra(getString(R.string.intent_city_key), it)
-            startActivity(intent)
-        }
+                val intent = Intent(this, GoogleMapActivity::class.java)
+                intent.putExtra(getString(R.string.intent_city_key), it)
+                startActivity(intent) }
     }
 
     override fun onStart() {

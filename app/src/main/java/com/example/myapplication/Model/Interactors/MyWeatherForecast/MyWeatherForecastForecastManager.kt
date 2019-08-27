@@ -17,27 +17,13 @@ import com.example.myapplication.Model.Repositories.OpenWeatherAPI.IOpenWeatherA
 import com.example.myapplication.Model.Repositories.WeatherRoom.IWeatherRoom
 import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.Observer
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.exceptions.UndeliverableException
-import io.reactivex.functions.BiFunction
-import io.reactivex.functions.Consumer
-import io.reactivex.functions.Function
-import io.reactivex.functions.Predicate
-import io.reactivex.plugins.RxJavaPlugins
 
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.AsyncSubject
 import io.reactivex.subjects.PublishSubject
-import org.reactivestreams.Publisher
-import retrofit2.HttpException
-import java.io.InterruptedIOException
-import java.net.SocketException
-import java.sql.SQLException
 import java.util.concurrent.TimeUnit
 
 import javax.inject.Inject
@@ -110,7 +96,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location?) {
-            if (!checkOfflineMode())
+            if (!checkInternetConnected())
                 updateCurrentCitysForecastIsLocationProvidersOnline(Coord(location!!.longitude, location!!.latitude))
         }
 
@@ -125,7 +111,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         @SuppressLint("MissingPermission")
         override fun onProviderDisabled(provider: String?) {
             checkProvider()
-            if (!checkOfflineMode() && !WeatherForecastApplication.isFirstStart) {
+            if (!checkInternetConnected() && !WeatherForecastApplication.isFirstStart) {
                 var lastKnownLocation = locationManager.getLastKnownLocation(provider)
                 if (lastKnownLocation != null)
                     updateCurrentCitysForecastIsLocationProvidersOnline(
@@ -254,7 +240,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         isNetworkProviderEnable = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    private fun checkOfflineMode(): Boolean {
+    private fun checkInternetConnected(): Boolean {
         if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED
             || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
         ) {
@@ -268,13 +254,13 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         observerCurrentForecast = observer
 
         if (WeatherForecastApplication.isFirstStart)
-            if (!checkOfflineMode()) {
+            if (!checkInternetConnected()) {
                 updateCurrentCityForecastIsNetworkOnline()
             } else {
                 asyncSubjectError.onNext("It's first start! That's why your need the Internet.")
             }
         else {
-            if (!checkOfflineMode())
+            if (!checkInternetConnected())
                 updateCurrentCityForecastIsNetworkOnline()
             else
                 updateCurrentCityForecastIsNetworkOffline()
@@ -311,7 +297,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
 
     override fun addMyCityWithCurrentDayForecast(cityName: String, observer: Observer<CityCurrentWeatherTable>) {
-        if (!checkOfflineMode()) {
+        if (!checkInternetConnected()) {
             disposable.add(openWeatherAPIManager.getCurrentWeatherByCityName(Units.METRIC, Lang.ENGLISH, cityName)
                 .subscribeOn(Schedulers.io())
                 .map {

@@ -9,7 +9,6 @@ import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.C
 import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
 import io.reactivex.*
 import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
 import javax.inject.Inject
 
 class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
@@ -133,6 +132,8 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     override fun stopSearchLocation() {
         weatherForecastManager.stopSearchLocation()
     }
+
+
 
     override fun onCleared() {
         super.onCleared()
