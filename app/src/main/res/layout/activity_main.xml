@@ -74,6 +74,6 @@
                 android:layout_height="wrap_content" android:id="@+id/add_my_cities"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-                android:background="@color/colorPrimary"/>
+                android:background="@color/colorPrimary" android:textColor="@android:color/background_light"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
