@@ -96,7 +96,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location?) {
-            if (!checkInternetConnected())
+            if (checkInternetConnected())
                 updateCurrentCitysForecastIsLocationProvidersOnline(Coord(location!!.longitude, location!!.latitude))
         }
 
@@ -111,7 +111,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         @SuppressLint("MissingPermission")
         override fun onProviderDisabled(provider: String?) {
             checkProvider()
-            if (!checkInternetConnected() && !WeatherForecastApplication.isFirstStart) {
+            if (checkInternetConnected() && !WeatherForecastApplication.isFirstStart) {
                 var lastKnownLocation = locationManager.getLastKnownLocation(provider)
                 if (lastKnownLocation != null)
                     updateCurrentCitysForecastIsLocationProvidersOnline(
@@ -142,7 +142,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     it.weathers!!
                 )
             }
-            .delay(2, TimeUnit.SECONDS)
+            .retryWhen {  it.take(2).delay(2, TimeUnit.SECONDS)}
             .distinctUntilChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -173,7 +173,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     }
                     .retryWhen
                     {
-                        it.take(2).delay(1,TimeUnit.SECONDS)
+                        it.take(5).delay(5,TimeUnit.SECONDS)
                     }
                     .distinctUntilChanged()
                     .subscribeOn(Schedulers.io())
@@ -244,9 +244,9 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED
             || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
         ) {
-            return false
-        } else {
             return true
+        } else {
+            return false
         }
     }
 
@@ -254,13 +254,13 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         observerCurrentForecast = observer
 
         if (WeatherForecastApplication.isFirstStart)
-            if (!checkInternetConnected()) {
+            if (checkInternetConnected()) {
                 updateCurrentCityForecastIsNetworkOnline()
             } else {
                 asyncSubjectError.onNext("It's first start! That's why your need the Internet.")
             }
         else {
-            if (!checkInternetConnected())
+            if (checkInternetConnected())
                 updateCurrentCityForecastIsNetworkOnline()
             else
                 updateCurrentCityForecastIsNetworkOffline()
@@ -297,7 +297,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
 
     override fun addMyCityWithCurrentDayForecast(cityName: String, observer: Observer<CityCurrentWeatherTable>) {
-        if (!checkInternetConnected()) {
+        if (checkInternetConnected()) {
             disposable.add(openWeatherAPIManager.getCurrentWeatherByCityName(Units.METRIC, Lang.ENGLISH, cityName)
                 .subscribeOn(Schedulers.io())
                 .map {
