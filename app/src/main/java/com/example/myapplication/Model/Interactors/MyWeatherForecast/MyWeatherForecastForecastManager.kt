@@ -210,7 +210,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     asyncSubjectError.onNext(it.localizedMessage)
 
                 }, {
-                    asyncSubjectError.onNext("Current city's forecast DB is empty")
+                    asyncSubjectError.onNext("Default City does not exist in DB")
                 })
         )
     }
