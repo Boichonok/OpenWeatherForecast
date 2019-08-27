@@ -16,12 +16,11 @@ import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Constants.Uni
 import com.example.myapplication.Model.Repositories.OpenWeatherAPI.IOpenWeatherAPIManager
 import com.example.myapplication.Model.Repositories.WeatherRoom.IWeatherRoom
 import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
-import io.reactivex.Flowable
+import io.reactivex.Completable
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableObserver
 
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.AsyncSubject
@@ -63,15 +62,13 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     //Channel for transmitting event that adding to DB is compleat
     private var publishSubjectAddMyCity = PublishSubject.create<CityCurrentWeatherTable>()
 
-    private lateinit var observerAddingMyCity: Observer<CityCurrentWeatherTable>
-
     //Channel for transmitting current forecast
     private var publishSubjectCurrentForecast = PublishSubject.create<CityCurrentWeatherTable>()
 
     private lateinit var observerCurrentForecast: Observer<CityCurrentWeatherTable>
 
     //Chanel for transmitting all my added cities
-    private var asyncSubjectAllMyCities = AsyncSubject.create<List<CityCurrentWeatherTable>>()
+    private var publishSubjectAllMyCities = PublishSubject.create<List<CityCurrentWeatherTable>>()
 
     private var isOfflineMode: Boolean = false
 
@@ -97,7 +94,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
             if (!isNetworkProviderEnable && !isGPSProviderEnable) {
                 updateCurrentCityForecastIsNetworkOnline()
             }
-
         }
     }
 
@@ -149,13 +145,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     it.weathers!!
                 )
             }
-            .delay(2,TimeUnit.SECONDS)
-            /*.doOnError {
-                publishSubjectCurrentForecast.onError(Throwable("updateCurrentCitysForecastIsLocationProvidersOnline(): " + it.message))
-            }
-            .retryWhen {
-                it.take(1).delay(10,TimeUnit.SECONDS)
-            }*/
+            .delay(2, TimeUnit.SECONDS)
             .distinctUntilChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -183,22 +173,24 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                             it.weathers!!
                         )
                     }
-                    /*.doOnError {
-                        publishSubjectCurrentForecast.onError(Throwable(it.localizedMessage))
-                    }*/
-                    .retryWhen {
-                        it.take(1).delay(10,TimeUnit.SECONDS)
-                    }
+
+                    .retry()
                     .distinctUntilChanged()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
-                        addCityToCurrentWeatherDB(it)
-                        Log.d("UseCase","publishSubjectCurrentForecast.Online.OnNext().city_name: " + it.city_name)
                         publishSubjectCurrentForecast.onNext(it)
-
-                        if (WeatherForecastApplication.isFirstStart)
-                            WeatherForecastApplication.setFinishedFirstStart(context)
+                        Log.d(
+                            "UseCase",
+                            "isFirstStart: " + WeatherForecastApplication.isFirstStart + " updateCurrentCityForecastIsNetworkOnline().City: " + it.city_name
+                        )
+                        disposable.add(addCityToCurrentWeatherDB(it)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.io())
+                            .subscribe {
+                                if (WeatherForecastApplication.isFirstStart)
+                                    WeatherForecastApplication.setFinishedFirstStart(context)
+                            })
                     }, {
                         publishSubjectCurrentForecast.onError(Throwable(it.message))
                     })
@@ -213,7 +205,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.d("UseCase","publishSubjectCurrentForecast.Offline.OnNext().city_name: " + it.city_name)
                     publishSubjectCurrentForecast.onNext(it)
                 }, {
                     publishSubjectCurrentForecast.onError(Throwable("updateCurrentCityForecastIsNetworkOffline(): " + it.message))
@@ -224,19 +215,26 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         )
     }
 
-    private fun addCityToCurrentWeatherDB(city: CityCurrentWeatherTable) {
-        disposable.add(
-            weatherRoom.getCityWeatherInfoDao().getRowByCityName(city.city_name)
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe({
-                    weatherRoom.getCityWeatherInfoDao().update(it)
-                }, {
-                    publishSubjectCurrentForecast.onError(Throwable("addCityToCurrentWeatherDB().RoomRequest: " + it.message))
-                }, {
-                    weatherRoom.getCityWeatherInfoDao().insert(city)
-                })
-        )
+    private fun addCityToCurrentWeatherDB(city: CityCurrentWeatherTable): Completable {
+        return Completable.create {
+            var emitter = it!!
+            disposable.add(
+                weatherRoom.getCityWeatherInfoDao().getRowByCityName(city.city_name)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .subscribe({
+                        weatherRoom.getCityWeatherInfoDao().update(it)
+                        Log.d("UseCase", "addCityToCurrentWeatherDB().City: " + city.city_name + " Update()")
+                        emitter.onComplete()
+                    }, {
+                        publishSubjectCurrentForecast.onError(Throwable("addCityToCurrentWeatherDB().RoomRequest: " + it.message))
+                    }, {
+                        weatherRoom.getCityWeatherInfoDao().insert(city)
+                        Log.d("UseCase", "addCityToCurrentWeatherDB().City: " + city.city_name + " Insert()")
+                        emitter.onComplete()
+                    })
+            )
+        }
     }
 
     private fun checkProvider() {
@@ -248,12 +246,16 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     override fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>) {
         observerCurrentForecast = observer
 
-        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() != NetworkInfo.State.CONNECTED
-                ||connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() != NetworkInfo.State.CONNECTED)
+        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED
+            || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
+        ) {
+            isOfflineMode = false
+        }
+        else
+        {
             isOfflineMode = true
+        }
 
-        Log.d("UseCase","IsFirstStart: " + WeatherForecastApplication.isFirstStart)
-        Log.d("UseCase", "Offline Mode: " + isOfflineMode)
         if (WeatherForecastApplication.isFirstStart)
             if (!isOfflineMode) {
                 updateCurrentCityForecastIsNetworkOnline()
@@ -280,39 +282,28 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     }
 
     override fun getAllMyCitiesForecasts(observer: Observer<List<CityCurrentWeatherTable>>) {
-        asyncSubjectAllMyCities.subscribe(observer)
-        if (!WeatherForecastApplication.isFirstStart) {
-            disposable.add(weatherRoom.getCityWeatherInfoDao().getCountRow()
+        publishSubjectAllMyCities.subscribe(observer)
+
+        disposable.add(
+            weatherRoom.getCityWeatherInfoDao().getAllRows(defaultCityName)
                 .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe {
-                    if (it > 0) {
-                        disposable.add(
-                            weatherRoom.getCityWeatherInfoDao().getAllRows(defaultCityName)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe({
-                                    asyncSubjectAllMyCities.onNext(it)
-                                    asyncSubjectAllMyCities.onComplete()
-                                }, {
-                                    asyncSubjectAllMyCities.onError(it)
-                                })
-                        )
-                    } else {
-                        asyncSubjectAllMyCities.onError(Throwable("Data base is Empty"))
-                    }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d("UseCase", "getAllMyCitiesForecasts.Success().list.size: " + it.size)
+                    publishSubjectAllMyCities.onNext(it)
+                    //publishSubjectAllMyCities.onComplete()
+                }, {
+                    publishSubjectAllMyCities.onError(it)
+                }, {
+                    publishSubjectAllMyCities.onError(Throwable("Maybe.OnCompleat(): Db is empty"))
                 })
+        )
 
-        } else
-            asyncSubjectAllMyCities.onError(Throwable("It is first start and DB is Empty"))
     }
 
-    override fun setSubscriberToUpdateMyCity(observer: Observer<CityCurrentWeatherTable>) {
-        observerAddingMyCity = observer
-    }
 
-    override fun addMyCityWithCurrentDayForecast(cityName: String) {
-        publishSubjectAddMyCity.subscribe(observerAddingMyCity)
+
+    override fun addMyCityWithCurrentDayForecast(cityName: String,observer: Observer<CityCurrentWeatherTable>) {
         if (!isOfflineMode) {
             disposable.add(openWeatherAPIManager.getCurrentWeatherByCityName(Units.METRIC, Lang.ENGLISH, cityName)
                 .subscribeOn(Schedulers.io())
@@ -328,12 +319,22 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    addCityToCurrentWeatherDB(it)
-                    publishSubjectAddMyCity.onComplete()
+                    Log.d("UseCase", "addingMyCity..().City: " + it.city_name)
+                    disposable.add(addCityToCurrentWeatherDB(it)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .subscribe {
+                            Log.d("UseCase","Added Compleat()")
+                            publishSubjectAddMyCity.subscribe(observer)
+                            publishSubjectAddMyCity.onComplete()
+                        })
+
                 },
                     {
+                        publishSubjectAddMyCity.subscribe(observer)
                         publishSubjectAddMyCity.onError(Throwable(it.message))
-                    })
+                    }
+                )
             )
         } else {
             publishSubjectAddMyCity.onError(Throwable("No Internet connection.\nPleas turn on the Internet!"))
@@ -345,22 +346,3 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     }
 
 }
-
-/*
-*
-*
-*  disposable.add(
-                weatherRoom.getCityWeatherInfoDao().getRowByCityName(cityName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        publishSubjectAddMyCity.onNext(it)
-                    }, {
-                        publishSubjectAddMyCity.onError(Throwable(it.message))
-                    }, {
-                        publishSubjectAddMyCity.onError(Throwable("No city with name: " + cityName + " in data base"))
-                    })
-            )
-*
-*
-* */

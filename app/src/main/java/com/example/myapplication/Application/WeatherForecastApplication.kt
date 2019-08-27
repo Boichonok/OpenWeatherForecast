@@ -47,8 +47,8 @@ class WeatherForecastApplication : Application() {
             PreferenceManager.getDefaultSharedPreferences(context).edit().apply {
                 putBoolean(APPLICATION_FIRST_STSRT, false)
                 apply()
-                isFirstStart = false
             }
+            isFirstStart = false
         }
     }
 

@@ -1,7 +1,6 @@
 package com.example.myapplication.Model.Repositories.WeatherRoom.DAO
 
 
-import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 
@@ -15,7 +14,7 @@ interface IRoomDao<T> {
 
     fun deleteByID(id: Int)
 
-    fun getAllRows(defaultCityName: String): Flowable<List<T>>
+    fun getAllRows(defaultCityName: String): Maybe<List<T>>
 
     fun getRowByCityName(cityName: String): Maybe<T>
 

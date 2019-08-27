@@ -8,9 +8,7 @@ interface IWeatherForecastManager {
 
     fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>)
 
-    fun setSubscriberToUpdateMyCity(observer: Observer<CityCurrentWeatherTable>)
-
-    fun addMyCityWithCurrentDayForecast(cityName: String)
+    fun addMyCityWithCurrentDayForecast(cityName: String,observer: Observer<CityCurrentWeatherTable>)
 
     fun getAllMyCitiesForecasts(observer: Observer<List<CityCurrentWeatherTable>>)
 

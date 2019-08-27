@@ -29,7 +29,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     constructor() {
         WeatherForecastApplication.getViewModelComponent().inject(this)
         weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(observerCurrentForecastIsLocationProvidersOnline)
-        weatherForecastManager.setSubscriberToUpdateMyCity(addingMyCityObserver)
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
     }
 
@@ -41,7 +40,8 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
-            currentCityForecast.value = t
+            Log.d("UseCase","currentLocationCurrentForecastObserver: onNext(): " + t!!.city_name)
+            currentCityForecast.value = t!!
 
         }
 
@@ -60,6 +60,7 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
         override fun onComplete() {
             weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
+            Log.d("UseCase","Added")
         }
 
         override fun onNext(t: CityCurrentWeatherTable?) {
@@ -68,6 +69,8 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
         override fun onError(e: Throwable?) {
             error = e!!.message!!
+            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
+
         }
 
     }
@@ -83,19 +86,22 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onNext(t: List<CityCurrentWeatherTable>?) {
-            Log.d("ViewModel","AllCities: " + t!!)
+
             myCitiesList.value = t!!
+            Log.d("UseCase","List in VIew Model: " + t!!.size)
         }
 
         override fun onError(e: Throwable?) {
             error = e!!.message!!
+            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
+
         }
 
     }
 
 
     override fun addMyCity(cityName: String) {
-        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName)
+        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName,addingMyCityObserver)
     }
 
     override fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable> {

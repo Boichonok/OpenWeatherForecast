@@ -11,7 +11,6 @@ class EnterMyCityDialog : Dialog {
 
     private lateinit var activity: Activity
 
-    private lateinit var infoDialog: String
     private lateinit var hintEditText: String
     private lateinit var title: String
     private lateinit var okAction: (enteredCity: String) -> Unit
@@ -22,13 +21,11 @@ class EnterMyCityDialog : Dialog {
 
     private constructor(
         activity: Activity,
-        infoDialog: String,
         title: String,
         hintEditText: String,
         okAction: (enteredCity: String) -> Unit
     ) : super(activity) {
         this.activity = activity
-        this.infoDialog = infoDialog
         this.okAction = okAction
         this.hintEditText = hintEditText
         this.title = title
@@ -39,13 +36,8 @@ class EnterMyCityDialog : Dialog {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.add_my_city_dialog)
         setHintEditText(hintEditText)
-        setInfoDialog(infoDialog)
         setTitle(title)
         setOkButtonClickListener(okAction)
-    }
-
-    private fun setInfoDialog(infoDialog: String) {
-        dialog_info.text = infoDialog
     }
 
     private fun setHintEditText(hint: String) {
@@ -62,8 +54,6 @@ class EnterMyCityDialog : Dialog {
             if (editedText != null) {
                 okAction(editedText)
                 dismiss()
-            } else {
-                dialog_info.text = "Please enter city name"
             }
         }
     }
@@ -77,7 +67,6 @@ class EnterMyCityDialog : Dialog {
     class Builder {
         private lateinit var activity: Activity
 
-        private lateinit var infoDialog: String
         private lateinit var hintEditText: String
         private lateinit var title: String
         private lateinit var okAction: (enteredCity: String) -> Unit
@@ -87,10 +76,7 @@ class EnterMyCityDialog : Dialog {
             this.activity = activity
         }
 
-        fun setInfoDialog(infoDialog: String): Builder {
-            this.infoDialog = infoDialog
-            return this
-        }
+
 
         fun setHintEditText(hint: String): Builder {
             this.hintEditText = hint
@@ -107,7 +93,7 @@ class EnterMyCityDialog : Dialog {
             return this
         }
 
-        fun build(): EnterMyCityDialog = EnterMyCityDialog(activity,infoDialog,title,hintEditText,okAction)
+        fun build(): EnterMyCityDialog = EnterMyCityDialog(activity,title,hintEditText,okAction)
 
 
     }

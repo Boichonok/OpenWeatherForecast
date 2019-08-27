@@ -24,7 +24,7 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     override fun deleteByID(id: Int)
 
     @Query("SELECT * FROM city_current_weather_table WHERE city_name != :defaultCityName")
-    override fun getAllRows(defaultCityName: String):Flowable<List<CityCurrentWeatherTable>>
+    override fun getAllRows(defaultCityName: String):Maybe<List<CityCurrentWeatherTable>>
 
     @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName")
     override fun getRowByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
