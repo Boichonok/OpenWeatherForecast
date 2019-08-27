@@ -6,6 +6,8 @@ import io.reactivex.observers.DisposableObserver
 
 interface IWeatherForecastManager {
 
+    fun subscribeToErrorHandler(observer: Observer<String>)
+
     fun subscribeToUpdateCurrentForecastByLocation(observer: Observer<CityCurrentWeatherTable>)
 
     fun addMyCityWithCurrentDayForecast(cityName: String,observer: Observer<CityCurrentWeatherTable>)

@@ -30,6 +30,25 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         WeatherForecastApplication.getViewModelComponent().inject(this)
         weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(observerCurrentForecastIsLocationProvidersOnline)
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
+        weatherForecastManager.subscribeToErrorHandler(observerErrors)
+    }
+
+    private var observerErrors = object : Observer<String>
+    {
+        override fun onComplete() {
+        }
+
+        override fun onSubscribe(d: Disposable?) {
+        }
+
+        override fun onNext(t: String?) {
+            errors.value = t!!
+            Log.d("ViewModel","Error: " + t)
+        }
+
+        override fun onError(e: Throwable?) {
+        }
+
     }
 
     private var observerCurrentForecastIsLocationProvidersOnline = object : Observer<CityCurrentWeatherTable> {
@@ -46,8 +65,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onError(e: Throwable?) {
-            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
-            error = e!!.message!!
         }
 
     }
@@ -55,7 +72,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     private var addingMyCityObserver  = object : Observer<CityCurrentWeatherTable>
     {
         override fun onSubscribe(d: Disposable?) {
-
         }
 
         override fun onComplete() {
@@ -68,9 +84,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onError(e: Throwable?) {
-            error = e!!.message!!
-            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
-
         }
 
     }
@@ -92,9 +105,6 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         }
 
         override fun onError(e: Throwable?) {
-            error = e!!.message!!
-            Log.d("UseCase","currentLocationCurrentForecastObserver: onError(): " + e!!.localizedMessage)
-
         }
 
     }

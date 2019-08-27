@@ -3,6 +3,7 @@ package com.example.myapplication.View
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -72,6 +73,10 @@ class MainActivity : AppCompatActivity() {
                     weatherForecastViewModel.addMyCity(it)
                 }.build().showDialog()
         }
+
+        weatherForecastViewModel.getErrors().observe(this, Observer {
+            Toast.makeText(this,it,Toast.LENGTH_LONG).show()
+        })
 
     }
 
