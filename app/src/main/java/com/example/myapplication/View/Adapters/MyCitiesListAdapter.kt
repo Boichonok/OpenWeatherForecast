@@ -17,9 +17,11 @@ import kotlin.collections.ArrayList
 class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesViewHolder>() {
 
 
-    private var items  = ArrayList<CityCurrentWeatherTable>()
+    private var items = ArrayList<CityCurrentWeatherTable>()
 
     private lateinit var itemClickAction: (CityCurrentWeatherTable) -> Unit
+
+    private var isItemActionActive: Boolean? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyCitiesViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
@@ -34,6 +36,10 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
         this.items.addAll(items)
         Log.d("UseCae", "List size: " + this.items.size)
         notifyDataSetChanged()
+    }
+
+    fun setItemActionActive(boolean: Boolean) {
+        isItemActionActive = boolean
     }
 
     fun setItemClickAction(actoin: (CityCurrentWeatherTable) -> Unit) {
@@ -61,7 +67,8 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
             .error(R.drawable.no_connect)
             .into(holder.icon)
         holder.itemView.setOnClickListener {
-            itemClickAction(item)
+            if (isItemActionActive != null && isItemActionActive!!)
+                itemClickAction(item)
         }
     }
 

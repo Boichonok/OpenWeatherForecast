@@ -18,6 +18,8 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
 
     private var myCitiesList = MutableLiveData<List<CityCurrentWeatherTable>>()
 
+    private var internetConnectionState = MutableLiveData<Boolean>()
+
 
     private var errors = MutableLiveData<String>()
     private var error = ""
@@ -32,6 +34,28 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         )
         weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
         weatherForecastManager.subscribeToErrorHandler(observerErrors)
+        weatherForecastManager.subscribeToObserveInternetStateConnection(observerInternetConnectionStates)
+    }
+
+    private var observerInternetConnectionStates = object : Observer<Boolean>
+    {
+        override fun onComplete() {
+        }
+
+        override fun onSubscribe(d: Disposable?) {
+        }
+
+        override fun onNext(t: Boolean?) {
+            internetConnectionState.value = t!!
+            if(!t)
+            {
+                errors.value = "Offline mode!"
+            }
+        }
+
+        override fun onError(e: Throwable?) {
+        }
+
     }
 
     private var observerErrors = object : Observer<String> {
@@ -140,5 +164,9 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
     override fun onCleared() {
         super.onCleared()
         weatherForecastManager.unsubscribeAll()
+    }
+
+    override fun observeInternetConnectionState(): LiveData<Boolean> {
+        return internetConnectionState
     }
 }

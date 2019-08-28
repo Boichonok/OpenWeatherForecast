@@ -10,6 +10,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 
 interface IWeatherForecastViewModel {
+    fun observeInternetConnectionState(): LiveData<Boolean>
     fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable>
     fun getMyCitiesList(): LiveData<List<CityCurrentWeatherTable>>
     fun getErrors(): LiveData<String>
@@ -17,4 +18,5 @@ interface IWeatherForecastViewModel {
     fun startSearchLocation()
     fun stopSearchLocation()
     fun deleteCityById(id: Int)
+
 }

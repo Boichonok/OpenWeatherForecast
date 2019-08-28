@@ -43,16 +43,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var itemTouchHelper: ItemTouchHelper
 
 
-    // var citiesList: ArrayList<CityCurrentWeatherTable> = ArrayList()
-
-    //val drawable = ContextCompat.getDrawable(this,R.drawable.ic_delete)
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val mainActivityComponent = DaggerIMainActivityComponent.builder()
-            .mainActivityModule(MainActivityModule(this,swipeToDeleteCallback))
+            .mainActivityModule(MainActivityModule(this, swipeToDeleteCallback))
             .build()
         mainActivityComponent.inject(this)
 
@@ -61,8 +58,10 @@ class MainActivity : AppCompatActivity() {
         weatherForecastViewModel.getWeatherForecastByCurrentLocation().observe(this, Observer {
             currentCityName.text = "" + getString(R.string.city_name_field) + " " + it.city_name
             country.text = "" + getString(R.string.country_field) + " " + it.country
-            temp.text = "" + getString(R.string.temp_field) + " " + it.temperature.toString() + getString(R.string.temp_cell)
-            windSpeed.text = "" + getString(R.string.wind_speed) + " " + it.wind_speed.toString() + " " + getString(R.string.meter_per_second)
+            temp.text = "" + getString(R.string.temp_field) + " " + it.temperature.toString() +
+                    getString(R.string.temp_cell)
+            windSpeed.text = "" + getString(R.string.wind_speed) + " " + it.wind_speed.toString() + " " +
+                    getString(R.string.meter_per_second)
             Picasso.get().load(WeatherClient.ICON_URL_PART1 + "" + it.weather!![0].icon + WeatherClient.ICON_URL_PART2)
                 .error(R.drawable.no_connect).into(weather_icon)
         })
@@ -89,22 +88,26 @@ class MainActivity : AppCompatActivity() {
 
         my_cities_recycler_view.layoutManager = LinearLayoutManager(this)
 
-
+        weatherForecastViewModel.observeInternetConnectionState().observe(this, Observer {
+            Log.d("MainActivity","Is InternetConnected: " + it!!)
+            myCitiesListAdapter.setItemActionActive(it)
+        })
         myCitiesListAdapter.setItemClickAction {
-                val intent = Intent(this, GoogleMapActivity::class.java)
-                intent.putExtra(getString(R.string.intent_city_key), it)
-                startActivity(intent) }
-    }
-
-    private var swipeToDeleteCallback: SwipeToDeleteCallback = object : SwipeToDeleteCallback(WeatherForecastApplication.getContextComponent().getContext())
-    {
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val adapter = myCitiesListAdapter
-            val id = adapter.removeAndGetSelectedPositionId(viewHolder.adapterPosition)
-            weatherForecastViewModel.deleteCityById(id)
+            val intent = Intent(this, GoogleMapActivity::class.java)
+            intent.putExtra(getString(R.string.intent_city_key), it)
+            startActivity(intent)
         }
-
     }
+
+    private var swipeToDeleteCallback: SwipeToDeleteCallback =
+        object : SwipeToDeleteCallback(WeatherForecastApplication.getContextComponent().getContext()) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = myCitiesListAdapter
+                val id = adapter.removeAndGetSelectedPositionId(viewHolder.adapterPosition)
+                weatherForecastViewModel.deleteCityById(id)
+            }
+
+        }
 
     override fun onStart() {
         super.onStart()

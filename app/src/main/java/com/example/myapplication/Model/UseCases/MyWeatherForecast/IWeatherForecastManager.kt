@@ -23,4 +23,6 @@ interface IWeatherForecastManager {
 
     fun deleteMyCityByID(id: Int): Boolean
 
+    fun subscribeToObserveInternetStateConnection(observer: Observer<Boolean>)
+
 }

@@ -7,7 +7,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.*
 import android.os.Bundle
-import android.util.Log
 import com.example.myapplication.Application.WeatherForecastApplication
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Coord
@@ -70,7 +69,10 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     private var publishSubjectAllMyCities = PublishSubject.create<List<CityCurrentWeatherTable>>()
 
     //Channel for transmitting all errors
-    private var asyncSubjectError = PublishSubject.create<String>()
+    private var publicSubjectError = PublishSubject.create<String>()
+
+    //Changel for transmitting Internet connection state
+    private var publishSubjectInternetConnection = PublishSubject.create<Boolean>()
 
 
     constructor() {
@@ -83,12 +85,14 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onLost(network: Network?) {
             super.onLost(network)
+            publishSubjectInternetConnection.onNext(false)
             updateCurrentCityForecastIsNetworkOffline()
 
         }
 
         override fun onAvailable(network: Network?) {
             super.onAvailable(network)
+            publishSubjectInternetConnection.onNext(true)
             updateCurrentCityForecastIsNetworkOnline()
         }
     }
@@ -147,7 +151,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
             .subscribe({
                 publishSubjectCurrentForecast.onNext(it)
             }, {
-                asyncSubjectError.onNext(it.localizedMessage)
+                publicSubjectError.onNext(it.localizedMessage)
             })
         )
     }
@@ -187,7 +191,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                                     WeatherForecastApplication.setFinishedFirstStart(context)
                             })
                     }, {
-                        asyncSubjectError.onNext(it.localizedMessage)
+                        publicSubjectError.onNext(it.localizedMessage)
                     })
             )
         }
@@ -201,10 +205,10 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 .subscribe({
                     publishSubjectCurrentForecast.onNext(it)
                 }, {
-                    asyncSubjectError.onNext(it.localizedMessage)
+                    publicSubjectError.onNext(it.localizedMessage)
 
                 }, {
-                    asyncSubjectError.onNext("Default City does not exist in DB")
+                    publicSubjectError.onNext("Default City does not exist in DB")
                 })
         )
     }
@@ -227,7 +231,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
                         emitter.onComplete()
                     }, {
-                        asyncSubjectError.onNext(it.localizedMessage)
+                        publicSubjectError.onNext(it.localizedMessage)
                     }, {
                         weatherRoom.getCityWeatherInfoDao().insert(city)
                         emitter.onComplete()
@@ -245,8 +249,10 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED
             || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
         ) {
+            publishSubjectInternetConnection.onNext(true)
             return true
         } else {
+            publishSubjectInternetConnection.onNext(false)
             return false
         }
     }
@@ -258,7 +264,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
             if (checkInternetConnected()) {
                 updateCurrentCityForecastIsNetworkOnline()
             } else {
-                asyncSubjectError.onNext("It's first start! That's why your need the Internet.")
+                publicSubjectError.onNext("It's first start! That's why your need the Internet.")
             }
         else {
             if (checkInternetConnected())
@@ -288,9 +294,9 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                 .subscribe({
                     publishSubjectAllMyCities.onNext(it)
                 }, {
-                    asyncSubjectError.onNext(it.localizedMessage)
+                    publicSubjectError.onNext(it.localizedMessage)
                 }, {
-                    asyncSubjectError.onNext("Can not get data from Db! It is empty!")
+                    publicSubjectError.onNext("Can not get data from Db! It is empty!")
                 })
         )
 
@@ -323,12 +329,12 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
                 },
                     {
-                        asyncSubjectError.onNext(it.localizedMessage)
+                        publicSubjectError.onNext(it.localizedMessage)
                     }
                 )
             )
         } else {
-            asyncSubjectError.onNext("No Internet connection.\nPleas turn on the Internet!")
+            publicSubjectError.onNext("No Internet connection.\nPleas turn on the Internet!")
         }
     }
 
@@ -349,6 +355,10 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     }
 
     override fun subscribeToErrorHandler(observer: Observer<String>) {
-        asyncSubjectError.subscribe(observer)
+        publicSubjectError.subscribe(observer)
+    }
+
+    override fun subscribeToObserveInternetStateConnection(observer: Observer<Boolean>) {
+        publishSubjectInternetConnection.observeOn(AndroidSchedulers.mainThread()).subscribe(observer)
     }
 }
