@@ -14,7 +14,7 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     override fun insert(cityCurrentWeatherTable: CityCurrentWeatherTable)
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     override fun update(cityCurrentWeatherTable: CityCurrentWeatherTable)
 
     @Query("DELETE FROM city_current_weather_table")
@@ -32,7 +32,7 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName")
     override fun getRowByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
 
-    @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName & country == :country")
+    @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName AND country == :country")
     override fun getRowByCityNameAndCountry(cityName: String, country: String): Maybe<CityCurrentWeatherTable>
 
     @Query("SELECT COUNT(city_name) FROM city_current_weather_table")

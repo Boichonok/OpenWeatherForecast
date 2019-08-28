@@ -225,8 +225,8 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                         it.coord = city.coord
                         it.wind_speed = city.wind_speed
                         it.temperature = city.temperature
-                        it.country = city.country
-                        it.city_name = city.city_name
+                        //it.country = city.country
+                        //it.city_name = city.city_name
                         weatherRoom.getCityWeatherInfoDao().update(it)
 
                         emitter.onComplete()
