@@ -109,7 +109,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
         override fun onProviderEnabled(provider: String?) {
             checkProvider()
-            checkInternetConnected()
         }
 
         @SuppressLint("MissingPermission")
@@ -277,6 +276,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
     @SuppressLint("MissingPermission")
     override fun startSearchLocation() {
+        checkInternetConnected()
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0f, locationListener)
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0f, locationListener)
     }
