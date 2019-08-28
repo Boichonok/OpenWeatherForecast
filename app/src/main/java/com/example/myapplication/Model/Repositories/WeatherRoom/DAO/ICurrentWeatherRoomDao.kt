@@ -32,6 +32,9 @@ interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
     @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName")
     override fun getRowByCityName(cityName: String): Maybe<CityCurrentWeatherTable>
 
+    @Query("SELECT * FROM city_current_weather_table WHERE city_Name == :cityName & country == :country")
+    override fun getRowByCityNameAndCountry(cityName: String, country: String): Maybe<CityCurrentWeatherTable>
+
     @Query("SELECT COUNT(city_name) FROM city_current_weather_table")
     override fun getCountRow(): Observable<Int>
 

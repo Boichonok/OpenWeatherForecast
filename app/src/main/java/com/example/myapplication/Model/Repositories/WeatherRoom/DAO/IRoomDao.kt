@@ -20,6 +20,8 @@ interface IRoomDao<T> {
 
     fun getRowByCityName(cityName: String): Maybe<T>
 
+    fun getRowByCityNameAndCountry(cityName: String,country : String): Maybe<T>
+
     fun getCountRow(): Observable<Int>
 
 

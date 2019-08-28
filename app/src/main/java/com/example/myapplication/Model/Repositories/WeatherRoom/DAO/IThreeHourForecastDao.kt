@@ -30,6 +30,9 @@ interface IThreeHourForecastDao: IRoomDao<ThreeHourForecastTable> {
     @Query("SELECT * FROM three_hour_forecast_table WHERE city_name == :cityName")
     override fun getRowByCityName(cityName: String): Maybe<ThreeHourForecastTable>
 
+    @Query("SELECT * FROM three_hour_forecast_table WHERE city_name == :cityName & country == :country")
+    override fun getRowByCityNameAndCountry(cityName: String, country: String): Maybe<ThreeHourForecastTable>
+
     @Query("SELECT COUNT(city_name) FROM three_hour_forecast_table")
     override fun getCountRow(): Observable<Int>
 

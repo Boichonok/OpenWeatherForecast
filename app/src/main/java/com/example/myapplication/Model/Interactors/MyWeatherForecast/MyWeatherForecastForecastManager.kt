@@ -217,7 +217,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         return Completable.create {
             var emitter = it!!
             disposable.add(
-                weatherRoom.getCityWeatherInfoDao().getRowByCityName(city.city_name)
+                weatherRoom.getCityWeatherInfoDao().getRowByCityNameAndCountry(city.city_name,city.country)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
                     .subscribe({
