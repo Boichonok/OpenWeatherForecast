@@ -11,21 +11,26 @@ import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.Weath
 import com.example.myapplication.R
 import com.example.myapplication.View.Adapters.PicassoMarker
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.map_activity.*
-import com.google.android.gms.maps.UiSettings
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.map_marker_info.*
 import kotlinx.android.synthetic.main.map_marker_info.view.*
 import javax.inject.Inject
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import com.google.android.gms.maps.model.BitmapDescriptor
+import android.graphics.Canvas
+import android.content.res.Resources.NotFoundException
+import com.google.android.gms.maps.model.MapStyleOptions
+import android.content.res.Resources
 
 
 class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @Inject
     lateinit var markerOptions: MarkerOptions
+
     @Inject
     lateinit var picassoMarker: PicassoMarker
 
@@ -99,6 +104,7 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap!!.setMinZoomPreference(12f)
         initGoogleMapSettings(googleMap)
 
+        setCustomMapStyle(googleMap)
 
         var markerPosition = setCustomizationForMarker(googleMap,city)
 
@@ -107,19 +113,41 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
+    private fun setCustomMapStyle(googleMap: GoogleMap?)
+    {
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val success = googleMap!!.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    this, R.raw.google_map_style
+                )
+            )
+
+            if (!success) {
+
+            }
+        } catch (e: Resources.NotFoundException) {
+
+        }
+
+    }
+
+
     private fun setCustomizationForMarker(googleMap: GoogleMap?,city: CityCurrentWeatherTable): LatLng
     {
         val cityPosition = LatLng(city.coord.lat, city.coord.lon)
+        val weatherIcon = WeatherClient.ICON_URL_PART1 + "" + city.weather!![0].icon + WeatherClient.ICON_URL_PART2
+        val cityName = getString(R.string.city_name_field) + " " + city.city_name
+        val cityTemp = getString(R.string.temp_field) + " " + city.temperature + getString(R.string.temp_cell)
 
         markerOptions.position(cityPosition)
 
-        var marker = googleMap!!.addMarker(markerOptions)
+        val marker = googleMap!!.addMarker(markerOptions)
 
         picassoMarker.setMarker(marker)
-
-        Picasso
-            .get()
-            .load(WeatherClient.ICON_URL_PART1 + "" + city.weather!![0].icon + WeatherClient.ICON_URL_PART2)
+        Picasso.get()
+            .load(weatherIcon)
             .into(picassoMarker)
 
         googleMap!!.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter
@@ -128,12 +156,17 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 return null
             }
 
-            override fun getInfoContents(p0: Marker?): View {
+            override fun getInfoContents(maarker: Marker?): View {
                 var view = layoutInflater.inflate(R.layout.map_marker_info,null)
-                val cityName = getString(R.string.city_name_field) + " " + city.city_name
-                val cityTemp = getString(R.string.temp_field) + " " + city.temperature + getString(R.string.temp_cell)
+
                 view.marker_city.text = cityName
                 view.marker_temp.text = cityTemp
+                Picasso
+                    .get()
+                    .load(weatherIcon)
+                    .into(view.marker_icon_weather)
+
+
                 return view
             }
         })

@@ -11,7 +11,7 @@ import io.reactivex.Observable
 
 @Dao
 interface ICurrentWeatherRoomDao: IRoomDao<CityCurrentWeatherTable> {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     override fun insert(cityCurrentWeatherTable: CityCurrentWeatherTable)
 
     @Update
