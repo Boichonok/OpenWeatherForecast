@@ -16,5 +16,5 @@ interface IWeatherForecastViewModel {
     fun addMyCity(cityName: String)
     fun startSearchLocation()
     fun stopSearchLocation()
-
+    fun deleteCityById(id: Int)
 }

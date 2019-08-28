@@ -14,6 +14,8 @@ interface IRoomDao<T> {
 
     fun deleteByID(id: Int)
 
+    fun getRowByID(id: Int): Maybe<T>
+
     fun getAllRows(defaultCityName: String): Maybe<List<T>>
 
     fun getRowByCityName(cityName: String): Maybe<T>

@@ -133,7 +133,9 @@ class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
         weatherForecastManager.stopSearchLocation()
     }
 
-
+    override fun deleteCityById(id: Int) {
+        weatherForecastManager.deleteMyCityByID(id)
+    }
 
     override fun onCleared() {
         super.onCleared()

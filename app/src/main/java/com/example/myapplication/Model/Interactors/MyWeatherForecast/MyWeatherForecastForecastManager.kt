@@ -72,7 +72,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     //Channel for transmitting all errors
     private var asyncSubjectError = PublishSubject.create<String>()
 
-    //private var isOfflineMode: Boolean = false
 
     constructor() {
         WeatherForecastApplication.getUseCaseComponent().inject(this)
@@ -90,7 +89,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
         override fun onAvailable(network: Network?) {
             super.onAvailable(network)
-                updateCurrentCityForecastIsNetworkOnline()
+            updateCurrentCityForecastIsNetworkOnline()
         }
     }
 
@@ -126,7 +125,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     }
 
     private fun updateCurrentCitysForecastIsLocationProvidersOnline(currentLocation: Coord) {
-        //publishSubjectCurrentForecast.subscribe(observerCurrentForecast)
         disposable.add(openWeatherAPIManager.getCurrentWeatherByGeoLocation(
             Units.METRIC,
             Lang.ENGLISH,
@@ -142,7 +140,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     it.weathers!!
                 )
             }
-            .retryWhen { it.take(2).delay(2, TimeUnit.SECONDS) }
+            .delay(2,TimeUnit.SECONDS)
             .distinctUntilChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -158,7 +156,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     private fun updateCurrentCityForecastIsNetworkOnline() {
         checkProvider()
         if (!isNetworkProviderEnable && !isGPSProviderEnable) {
-            //publishSubjectCurrentForecast.subscribe(observerCurrentForecast)
             disposable.add(
                 openWeatherAPIManager.getCurrentWeatherByCityName(Units.METRIC, Lang.ENGLISH, defaultCityName)
                     .map {
@@ -169,21 +166,19 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                             it.main!!.temp.toString(),
                             it.wind!!.speed.toString(),
                             it.weathers!!
-                        )
+                        ).apply {
+                            this.id = 0
+                        }
                     }
                     .retryWhen
                     {
                         it.take(2).delay(5, TimeUnit.SECONDS)
                     }
-                    //.distinctUntilChanged()
                     .subscribeOn(Schedulers.single())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
                         publishSubjectCurrentForecast.onNext(it)
-                        Log.d(
-                            "UseCase",
-                            "isFirstStart: " + WeatherForecastApplication.isFirstStart + " updateCurrentCityForecastIsNetworkOnline().City: " + it.city_name
-                        )
+
                         disposable.add(addCityToCurrentWeatherDB(it)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
@@ -199,7 +194,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
     }
 
     private fun updateCurrentCityForecastIsNetworkOffline() {
-        //publishSubjectCurrentForecast.subscribe(observerCurrentForecast)
         disposable.add(
             weatherRoom.getCityWeatherInfoDao().getRowByCityName(defaultCityName)
                 .subscribeOn(Schedulers.io())
@@ -223,7 +217,6 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
                     .subscribe({
-                        Log.d("UseCase", "City: " + it.city_name + " city temp: " + it.temperature + " before update!")
                         it.weather = city.weather
                         it.coord = city.coord
                         it.wind_speed = city.wind_speed
@@ -231,19 +224,12 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
                         it.country = city.country
                         it.city_name = city.city_name
                         weatherRoom.getCityWeatherInfoDao().update(it)
-                        weatherRoom.getCityWeatherInfoDao().getRowByCityName(city.city_name)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(Schedulers.io())
-                            .subscribe {
-                                Log.d("UseCase", "City: " + it.city_name + " city temp: " + it.temperature + " after update!")
 
-                            }
                         emitter.onComplete()
                     }, {
                         asyncSubjectError.onNext(it.localizedMessage)
                     }, {
                         weatherRoom.getCityWeatherInfoDao().insert(city)
-                        Log.d("UseCase", "City: " + city.city_name +" city temp: " + city.temperature +  "was insert!")
                         emitter.onComplete()
                     })
             )
@@ -344,6 +330,18 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
         } else {
             asyncSubjectError.onNext("No Internet connection.\nPleas turn on the Internet!")
         }
+    }
+
+    override fun deleteMyCityByID(id: Int): Boolean {
+        var isComplet = false
+        disposable.add(Completable.fromAction {
+            weatherRoom.getCityWeatherInfoDao().deleteByID(id)
+        }.subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe {
+                isComplet = true
+            })
+        return isComplet
     }
 
     override fun unsubscribeAll() {

@@ -6,6 +6,8 @@ import android.preference.PreferenceManager
 import android.util.Log
 import com.example.myapplication.DI.Components.ActivityComponents.DaggerIGoogleMapActivityComponent
 import com.example.myapplication.DI.Components.ActivityComponents.IGoogleMapActivityComponent
+import com.example.myapplication.DI.Components.DaggerIContextComponent
+import com.example.myapplication.DI.Components.IContextComponent
 import com.example.myapplication.DI.Components.RepositorySComponents.DaggerIOpenWeatherComponent
 import com.example.myapplication.DI.Components.RepositorySComponents.IOpenWeatherComponent
 import com.example.myapplication.DI.Components.UseCasesComponents.DaggerIUseCaseComponents
@@ -31,15 +33,15 @@ class WeatherForecastApplication : Application() {
         private lateinit var viewModelComponent: IViewModelComponent
         private lateinit var useCaseComponent: IUseCaseComponents
         private lateinit var googleMapActivityComponent: IGoogleMapActivityComponent
+        private lateinit var contextComponent: IContextComponent
 
         private val APPLICATION_FIRST_STSRT = "WeatherForecastApplication"
-        private val publishSubjectFirstStart = ReplaySubject.create<Boolean>()
 
         var isFirstStart: Boolean = true
-        get() = field
-        private set(value){
-            field = value
-        }
+            get() = field
+            private set(value) {
+                field = value
+            }
 
         var compositeDisposableModule: CompositeDisposableModule = CompositeDisposableModule()
 
@@ -47,6 +49,7 @@ class WeatherForecastApplication : Application() {
         fun getViewModelComponent(): IViewModelComponent = viewModelComponent
         fun getUseCaseComponent(): IUseCaseComponents = useCaseComponent
         fun getGoogleMapActivityComponent(): IGoogleMapActivityComponent = googleMapActivityComponent
+        fun getContextComponent(): IContextComponent = contextComponent
 
         fun setFinishedFirstStart(context: Context) {
             PreferenceManager.getDefaultSharedPreferences(context).edit().apply {
@@ -78,8 +81,13 @@ class WeatherForecastApplication : Application() {
         viewModelComponent = initViewModel()
         useCaseComponent = initUseCase()
         googleMapActivityComponent = initGoogleMapActivity()
+        contextComponent = initContext()
 
         checkFirstStart(this)
+    }
+
+    private fun initContext(): IContextComponent {
+        return DaggerIContextComponent.builder().contextModule(contextModule).build()
     }
 
     private fun initRepository(): IOpenWeatherComponent {
@@ -106,8 +114,7 @@ class WeatherForecastApplication : Application() {
             .build()
     }
 
-    private fun initGoogleMapActivity(): IGoogleMapActivityComponent
-    {
+    private fun initGoogleMapActivity(): IGoogleMapActivityComponent {
         return DaggerIGoogleMapActivityComponent
             .builder()
             .googleMapActivityModule(googleMapActivityModule)

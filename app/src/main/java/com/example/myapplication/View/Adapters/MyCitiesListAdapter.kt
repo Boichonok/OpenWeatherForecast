@@ -17,7 +17,7 @@ import kotlin.collections.ArrayList
 class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesViewHolder>() {
 
 
-    private var items: List<CityCurrentWeatherTable> = ArrayList()
+    private var items  = ArrayList<CityCurrentWeatherTable>()
 
     private lateinit var itemClickAction: (CityCurrentWeatherTable) -> Unit
 
@@ -30,7 +30,8 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
     }
 
     fun setListItems(items: List<CityCurrentWeatherTable>) {
-        this.items = items
+        this.items.clear()
+        this.items.addAll(items)
         Log.d("UseCae", "List size: " + this.items.size)
         notifyDataSetChanged()
     }
@@ -41,6 +42,12 @@ class MyCitiesListAdapter() : RecyclerView.Adapter<MyCitiesListAdapter.MyCitiesV
 
     override fun getItemCount(): Int {
         return this.items.size
+    }
+
+    fun removeAndGetSelectedPositionId(position: Int): Int {
+        val id = items.removeAt(position).id
+        notifyItemRemoved(position)
+        return id
     }
 
     override fun onBindViewHolder(holder: MyCitiesViewHolder, position: Int) {

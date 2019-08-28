@@ -1,19 +1,26 @@
 package com.example.myapplication.View
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.Application.WeatherForecastApplication
 import com.example.myapplication.DI.Components.ActivityComponents.DaggerIMainActivityComponent
 import com.example.myapplication.DI.Modules.ActivityModules.MainActivityModule
+import com.example.myapplication.DI.Modules.ContextModule
 import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
 import com.example.myapplication.R
 import com.example.myapplication.View.Adapters.MyCitiesListAdapter
 import com.example.myapplication.View.CustomDialog.EnterMyCityDialog
+import com.example.myapplication.View.ViewUtils.SwipeToDeleteCallback
 import com.example.myapplication.ViewModel.IWeatherForecastViewModel
 import com.squareup.picasso.Picasso
 
@@ -32,20 +39,24 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var addMyCityDialog: EnterMyCityDialog.Builder
 
+    @Inject
+    lateinit var itemTouchHelper: ItemTouchHelper
+
+
     // var citiesList: ArrayList<CityCurrentWeatherTable> = ArrayList()
+
+    //val drawable = ContextCompat.getDrawable(this,R.drawable.ic_delete)
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val mainActivityComponent = DaggerIMainActivityComponent.builder()
-            .mainActivityModule(MainActivityModule(this))
+            .mainActivityModule(MainActivityModule(this,swipeToDeleteCallback))
             .build()
         mainActivityComponent.inject(this)
 
-
-
-        Log.d("MainActivity", "OnCreate()")
+        itemTouchHelper.attachToRecyclerView(my_cities_recycler_view)
 
         weatherForecastViewModel.getWeatherForecastByCurrentLocation().observe(this, Observer {
             currentCityName.text = "" + getString(R.string.city_name_field) + " " + it.city_name
@@ -85,14 +96,22 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent) }
     }
 
+    private var swipeToDeleteCallback: SwipeToDeleteCallback = object : SwipeToDeleteCallback(WeatherForecastApplication.getContextComponent().getContext())
+    {
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val adapter = myCitiesListAdapter
+            val id = adapter.removeAndGetSelectedPositionId(viewHolder.adapterPosition)
+            weatherForecastViewModel.deleteCityById(id)
+        }
+
+    }
+
     override fun onStart() {
         super.onStart()
-        Log.d("MainActivity", "onStart()")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d("MainActivity", "onResume()")
         weatherForecastViewModel.startSearchLocation()
 
 
