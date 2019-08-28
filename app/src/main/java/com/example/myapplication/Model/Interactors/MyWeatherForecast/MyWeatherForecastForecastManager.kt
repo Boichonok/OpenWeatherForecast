@@ -109,6 +109,7 @@ class MyWeatherForecastForecastManager : IWeatherForecastManager {
 
         override fun onProviderEnabled(provider: String?) {
             checkProvider()
+            checkInternetConnected()
         }
 
         @SuppressLint("MissingPermission")

@@ -144,8 +144,7 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
         markerOptions.position(cityPosition)
 
         val marker = googleMap!!.addMarker(markerOptions)
-
-        picassoMarker.setMarker(marker)
+        picassoMarker.setMarker(marker,200,200)
         Picasso.get()
             .load(weatherIcon)
             .into(picassoMarker)

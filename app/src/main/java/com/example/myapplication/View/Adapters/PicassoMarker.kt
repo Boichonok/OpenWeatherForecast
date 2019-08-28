@@ -15,9 +15,14 @@ class PicassoMarker() : Target {
 
     private lateinit var mMarker: Marker
 
-    fun setMarker(marker: Marker)
+    private var markerWidth = 0
+    private var markerHeight = 0
+
+    fun setMarker(marker: Marker, width: Int, height: Int)
     {
         mMarker = marker
+        markerHeight = height
+        markerWidth = width
     }
 
 
@@ -38,7 +43,9 @@ class PicassoMarker() : Target {
 
 
     override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
-        mMarker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
+
+        var newBitMap = Bitmap.createScaledBitmap(bitmap,markerWidth,markerHeight,false)
+        mMarker.setIcon(BitmapDescriptorFactory.fromBitmap(newBitMap))
 
     }
 
