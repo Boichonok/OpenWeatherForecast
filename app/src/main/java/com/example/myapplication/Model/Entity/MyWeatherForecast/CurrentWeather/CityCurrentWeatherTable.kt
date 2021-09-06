@@ -5,7 +5,7 @@ import androidx.room.*
 import androidx.annotation.NonNull
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Coord
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Weather
-import com.example.myapplication.Model.Repositories.WeatherRoom.ConverterCityCurrentWeather
+import com.example.myapplication.Model.Repository.WeatherRoomSource.ConverterCityCurrentWeather
 import java.util.
 *import java.io.Serializable;
 

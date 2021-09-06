@@ -54,12 +54,14 @@
                     android:textSize="18sp" app:layout_constraintHorizontal_bias="0.0" android:layout_marginTop="8dp"
                     app:layout_constraintTop_toBottomOf="@+id/temp"/>
         </LinearLayout>
+
         <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:layout_editor_absoluteX="213dp" android:id="@+id/weather_icon"
-                app:srcCompat="@drawable/no_connect" android:contentDescription="@string/weather_icon_description"
-                tools:layout_editor_absoluteY="8dp"/>
+                tools:layout_editor_absoluteX="213dp"
+                android:id="@+id/weather_icon"
+                android:contentDescription="@string/weather_icon_description"
+                tools:layout_editor_absoluteY="8dp" />
     </LinearLayout>
     <LinearLayout
             android:orientation="vertical"
@@ -67,12 +69,27 @@
             android:layout_height="wrap_content"
             tools:layout_editor_absoluteX="41dp" app:layout_constraintTop_toBottomOf="@+id/linearLayout"
             android:id="@+id/linearLayout3">
+
+        <Button
+                android:text="@string/update_weather_forecast_by_my_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/updateWeahterByMyLocation"
+                android:layout_marginTop="12dp"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/colorAccent" />
+
         <Button
                 android:text="@string/add_cities_button"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/add_my_cities"
-                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-                android:background="@color/colorPrimary" android:textColor="@android:color/background_light"/>
+                android:layout_height="wrap_content"
+                android:id="@+id/add_my_cities"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/colorAccent" />
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

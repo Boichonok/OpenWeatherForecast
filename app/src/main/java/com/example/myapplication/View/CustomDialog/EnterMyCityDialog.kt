@@ -7,25 +7,19 @@ import android.view.Window
 import com.example.myapplication.R
 import kotlinx.android.synthetic.main.add_my_city_dialog.*
 
-class EnterMyCityDialog : Dialog {
-
-    private lateinit var activity: Activity
+class EnterMyCityDialog(activity: Activity) : Dialog(activity) {
 
     private lateinit var hintEditText: String
     private lateinit var title: String
     private lateinit var okAction: (enteredCity: String) -> Unit
 
-    constructor(activity: Activity) : super(activity) {
-        this.activity = activity
-    }
 
     private constructor(
         activity: Activity,
         title: String,
         hintEditText: String,
         okAction: (enteredCity: String) -> Unit
-    ) : super(activity) {
-        this.activity = activity
+    ) : this(activity) {
         this.okAction = okAction
         this.hintEditText = hintEditText
         this.title = title
@@ -50,32 +44,23 @@ class EnterMyCityDialog : Dialog {
 
     private fun setOkButtonClickListener(okAction: (enteredCity: String) -> Unit) {
         dialog_ok_button.setOnClickListener {
-            var editedText = dialog_edit_city_name.text.toString()
-            if (editedText != null) {
-                okAction(editedText)
-                dismiss()
-            }
+            val editedText = dialog_edit_city_name.text.toString()
+            okAction(editedText)
+            dismiss()
         }
     }
 
-    public fun showDialog()
+    fun showDialog()
     {
-        window.attributes.windowAnimations = R.style.CustomDialogTheme
+        window?.attributes?.windowAnimations = R.style.CustomDialogTheme
         show()
     }
 
-    class Builder {
-        private lateinit var activity: Activity
+    class Builder(private val activity: Activity) {
 
         private lateinit var hintEditText: String
         private lateinit var title: String
         private lateinit var okAction: (enteredCity: String) -> Unit
-
-
-        constructor(activity: Activity) {
-            this.activity = activity
-        }
-
 
 
         fun setHintEditText(hint: String): Builder {

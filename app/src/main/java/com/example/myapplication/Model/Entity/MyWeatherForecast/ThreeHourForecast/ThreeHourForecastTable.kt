@@ -4,7 +4,7 @@ import androidx.room.*
 import androidx.annotation.NonNull
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Coord
 import com.example.myapplication.Model.Entity.WeatherApiPojos.POJO.Threehourforecast.ThreeHourWeather
-import com.example.myapplication.Model.Repositories.WeatherRoom.ConverterThreeHourForecast
+import com.example.myapplication.Model.Repository.WeatherRoomSource.ConverterThreeHourForecast
 import java.util.*
 
 

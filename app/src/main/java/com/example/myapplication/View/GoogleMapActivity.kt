@@ -5,9 +5,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import android.os.Bundle
 import android.view.View
-import com.example.myapplication.Application.WeatherForecastApplication
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
-import com.example.myapplication.Model.Repositories.OpenWeatherAPI.Network.WeatherAPI.Client.WeatherClient
+import com.example.myapplication.Model.Repository.OpenWeatherRestApiSource.Network.WeatherAPI.Client.WeatherClient
 import com.example.myapplication.R
 import com.example.myapplication.View.Adapters.PicassoMarker
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -15,24 +14,19 @@ import kotlinx.android.synthetic.main.map_activity.*
 import com.google.android.gms.maps.model.*
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.map_marker_info.view.*
-import javax.inject.Inject
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import com.google.android.gms.maps.model.BitmapDescriptor
-import android.graphics.Canvas
-import android.content.res.Resources.NotFoundException
 import com.google.android.gms.maps.model.MapStyleOptions
 import android.content.res.Resources
 
 
 class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    @Inject
-    lateinit var markerOptions: MarkerOptions
+    private val markerOptions: MarkerOptions by lazy {
+        MarkerOptions()
+    }
 
-    @Inject
-    lateinit var picassoMarker: PicassoMarker
+    private val picassoMarker: PicassoMarker by lazy {
+        PicassoMarker()
+    }
 
     private val MAP_VIEW_BUNDLE_KEY = "GoogleMapActivity"
 
@@ -41,7 +35,6 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.map_activity)
-        WeatherForecastApplication.getGoogleMapActivityComponent().inject(this)
         loadAndCreateGoogleMapActivityState(savedInstanceState)
         city = intent.getSerializableExtra(getString(R.string.intent_city_key)) as CityCurrentWeatherTable
 

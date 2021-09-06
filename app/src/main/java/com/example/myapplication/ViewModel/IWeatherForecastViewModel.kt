@@ -10,10 +10,10 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 
 interface IWeatherForecastViewModel {
-    fun observeInternetConnectionState(): LiveData<Boolean>
-    fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable>
-    fun getMyCitiesList(): LiveData<List<CityCurrentWeatherTable>>
-    fun getErrors(): LiveData<String>
+    val isInternetAvl: LiveData<Boolean>
+    val currentCityForecast: LiveData<CityCurrentWeatherTable>
+    val myCitiesList: LiveData<List<CityCurrentWeatherTable>>
+    val errors: LiveData<String>
     fun addMyCity(cityName: String)
     fun startSearchLocation()
     fun stopSearchLocation()

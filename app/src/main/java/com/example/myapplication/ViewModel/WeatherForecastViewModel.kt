@@ -1,172 +1,61 @@
 package com.example.myapplication.ViewModel
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.myapplication.Application.WeatherForecastApplication
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.myapplication.Model.Entity.MyWeatherForecast.CurrentWeather.CityCurrentWeatherTable
-import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastManager
-import io.reactivex.*
-import io.reactivex.disposables.Disposable
-import javax.inject.Inject
-
-class WeatherForecastViewModel : ViewModel, IWeatherForecastViewModel {
-
-
-    private var currentCityForecast = MutableLiveData<CityCurrentWeatherTable>()
-
-    private var myCitiesList = MutableLiveData<List<CityCurrentWeatherTable>>()
-
-    private var internetConnectionState = MutableLiveData<Boolean>()
+import com.example.myapplication.Model.UseCases.MyWeatherForecast.INetworkConnectionUseCase
+import com.example.myapplication.Model.UseCases.MyWeatherForecast.IUserLocationUseCase
+import com.example.myapplication.Model.UseCases.MyWeatherForecast.IWeatherForecastUseCases
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
-    private var errors = MutableLiveData<String>()
-    private var error = ""
+class WeatherForecastViewModel(
+    private val weatherForecastUseCase: IWeatherForecastUseCases,
+    networkConnectionUseCases: INetworkConnectionUseCase,
+    private val userLocationUseCase: IUserLocationUseCase
+) : ViewModel(), IWeatherForecastViewModel {
 
-    @Inject
-    lateinit var weatherForecastManager: IWeatherForecastManager
 
-    constructor() {
-        WeatherForecastApplication.getViewModelComponent().inject(this)
-        weatherForecastManager.subscribeToUpdateCurrentForecastByLocation(
-            observerCurrentForecastIsLocationProvidersOnline
-        )
-        weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
-        weatherForecastManager.subscribeToErrorHandler(observerErrors)
-        weatherForecastManager.subscribeToObserveInternetStateConnection(observerInternetConnectionStates)
-    }
+    override val currentCityForecast = weatherForecastUseCase.currentCityWeatherForecast.asLiveData()
 
-    private var observerInternetConnectionStates = object : Observer<Boolean>
-    {
-        override fun onComplete() {
-        }
+    override val myCitiesList = weatherForecastUseCase.getAllMySavedCitiesForecast().asLiveData()
 
-        override fun onSubscribe(d: Disposable?) {
-        }
+    override val isInternetAvl = networkConnectionUseCases.networkAvlChanges.asLiveData()
 
-        override fun onNext(t: Boolean?) {
-            internetConnectionState.value = t!!
-            if(!t)
-            {
-                errors.value = "Offline mode!"
-            }
-        }
+    override val errors = MutableLiveData<String>()
 
-        override fun onError(e: Throwable?) {
-        }
-
-    }
-
-    private var observerErrors = object : Observer<String> {
-        override fun onComplete() {
-        }
-
-        override fun onSubscribe(d: Disposable?) {
-        }
-
-        override fun onNext(t: String?) {
-                errors.value = t!!
-            Log.d("ViewModel", "Error: " + t)
-        }
-
-        override fun onError(e: Throwable?) {
-        }
-
-    }
-
-    private var observerCurrentForecastIsLocationProvidersOnline = object : Observer<CityCurrentWeatherTable> {
-        override fun onSubscribe(d: Disposable?) {
-        }
-
-        override fun onComplete() {
-        }
-
-        override fun onNext(t: CityCurrentWeatherTable?) {
-            Log.d("UseCase", "currentLocationCurrentForecastObserver: onNext(): " + t!!.city_name)
-            currentCityForecast.value = t!!
-
-        }
-
-        override fun onError(e: Throwable?) {
-        }
-
-    }
-
-    private var addingMyCityObserver = object : Observer<CityCurrentWeatherTable> {
-        override fun onSubscribe(d: Disposable?) {
-        }
-
-        override fun onComplete() {
-            weatherForecastManager.getAllMyCitiesForecasts(getAllMyCitiesObserver)
-            Log.d("UseCase", "Added")
-        }
-
-        override fun onNext(t: CityCurrentWeatherTable?) {
-
-        }
-
-        override fun onError(e: Throwable?) {
-        }
-
-    }
-
-    private var getAllMyCitiesObserver = object : Observer<List<CityCurrentWeatherTable>> {
-        override fun onSubscribe(d: Disposable?) {
-
-        }
-
-        override fun onComplete() {
-
-        }
-
-        override fun onNext(t: List<CityCurrentWeatherTable>?) {
-
-            myCitiesList.value = t!!
-            Log.d("UseCase", "List in VIew Model: " + t!!.size)
-        }
-
-        override fun onError(e: Throwable?) {
-        }
-
-    }
-
+    private var currUserLocationJob: Job? = null
 
     override fun addMyCity(cityName: String) {
-        weatherForecastManager.addMyCityWithCurrentDayForecast(cityName, addingMyCityObserver)
-    }
-
-    override fun getWeatherForecastByCurrentLocation(): LiveData<CityCurrentWeatherTable> {
-        return currentCityForecast
-    }
-
-    override fun getMyCitiesList(): LiveData<List<CityCurrentWeatherTable>> {
-        return myCitiesList
-    }
-
-    override fun getErrors(): LiveData<String> {
-        errors.value = error
-        return errors
+        viewModelScope.launch {
+            weatherForecastUseCase.saveMyCityWeatherForecast(cityName)
+        }
     }
 
     override fun startSearchLocation() {
-        weatherForecastManager.startSearchLocation()
+        userLocationUseCase.currUserLocationRequest()
+        currUserLocationJob = viewModelScope.launch {
+            userLocationUseCase.userLocation.collectLatest { userLocation ->
+                weatherForecastUseCase.setCurrCityLocation(
+                    IWeatherForecastUseCases.CityLocation(userLocation)
+                )
+            }
+        }
     }
 
     override fun stopSearchLocation() {
-        weatherForecastManager.stopSearchLocation()
+        currUserLocationJob?.cancel()
+        currUserLocationJob = null
     }
 
     override fun deleteCityById(id: Int) {
-        weatherForecastManager.deleteMyCityByID(id)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        weatherForecastManager.unsubscribeAll()
-    }
-
-    override fun observeInternetConnectionState(): LiveData<Boolean> {
-        return internetConnectionState
+        viewModelScope.launch {
+            weatherForecastUseCase.deleteMyCityWeatherForecastById(id)
+        }
     }
 }
